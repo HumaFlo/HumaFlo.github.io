@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HumaFlo — Data for real-world challenges</title>
+    <meta
+      name="description"
+      content="Explore HumaFlo's data projects: a disaster resilience dashboard and a brief on childhood stunting in Timor-Leste."
+    >
+    <link rel="canonical" href="https://humaflo.github.io/">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://humaflo.github.io/">
+    <meta property="og:title" content="HumaFlo — Data for real-world challenges">
+    <meta
+      property="og:description"
+      content="Data projects to help make complex challenges easier to understand."
+    >
+    <meta name="theme-color" content="#f5f7f2">
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #17332c;
+        --muted: #536b62;
+        --accent: #176b52;
+        --accent-dark: #104c3b;
+        --paper: #f5f7f2;
+        --surface: #ffffff;
+        --line: #dce5dc;
+        --soft: #e8f1e9;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.6;
+      }
+
+      a {
+        color: var(--accent-dark);
+      }
+
+      a:focus-visible,
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible {
+        outline: 3px solid #d48b34;
+        outline-offset: 3px;
+      }
+
+      .wrap {
+        width: min(100% - 2.5rem, 1080px);
+        margin-inline: auto;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 76px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        color: var(--ink);
+        font-size: 1.1rem;
+        font-weight: 750;
+        letter-spacing: -0.04em;
+        text-decoration: none;
+      }
+
+      .topbar nav {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.94rem;
+      }
+
+      .topbar nav a {
+        text-decoration: none;
+      }
+
+      .topbar nav a:hover {
+        text-decoration: underline;
+        text-underline-offset: 4px;
+      }
+
+      main {
+        padding-block: 4.75rem 5rem;
+      }
+
+      .hero {
+        max-width: 760px;
+        margin-bottom: 3.5rem;
+      }
+
+      .eyebrow {
+        margin: 0 0 0.8rem;
+        color: var(--accent);
+        font-size: 0.78rem;
+        font-weight: 750;
+        letter-spacing: 0.13em;
+        text-transform: uppercase;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        max-width: 700px;
+        margin-bottom: 1rem;
+        font-size: clamp(2.5rem, 6vw, 4.8rem);
+        line-height: 1.04;
+        letter-spacing: -0.065em;
+      }
+
+      .lead {
+        max-width: 650px;
+        margin-bottom: 0;
+        color: var(--muted);
+        font-size: clamp(1.08rem, 2vw, 1.25rem);
+      }
+
+      .section-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .section-heading h2,
+      .feedback h2 {
+        margin-bottom: 0;
+        font-size: clamp(1.65rem, 3vw, 2.2rem);
+        letter-spacing: -0.045em;
+      }
+
+      .section-heading p {
+        margin-bottom: 0.2rem;
+        color: var(--muted);
+      }
+
+      .projects {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.15rem;
+      }
+
+      .project {
+        display: flex;
+        min-height: 260px;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: clamp(1.4rem, 3vw, 2rem);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--surface);
+        box-shadow: 0 8px 30px rgb(23 51 44 / 4%);
+      }
+
+      .project-number {
+        display: grid;
+        width: 40px;
+        height: 40px;
+        margin-bottom: 1.1rem;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--soft);
+        color: var(--accent-dark);
+        font-size: 0.9rem;
+        font-weight: 750;
+      }
+
+      .project h3 {
+        margin-bottom: 0.55rem;
+        font-size: 1.35rem;
+        letter-spacing: -0.035em;
+      }
+
+      .project p {
+        margin-bottom: 1.4rem;
+        color: var(--muted);
+      }
+
+      .project-link {
+        display: inline-flex;
+        gap: 0.45rem;
+        align-items: center;
+        margin-top: auto;
+        font-weight: 700;
+        text-decoration-thickness: 1px;
+        text-underline-offset: 4px;
+      }
+
+      .project-link:hover {
+        color: var(--accent);
+      }
+
+      .impact {
+        display: grid;
+        grid-template-columns: minmax(180px, 0.7fr) 1.3fr;
+        gap: 2rem;
+        align-items: start;
+        margin-top: 3rem;
+        padding: clamp(1.5rem, 4vw, 2.5rem);
+        border-radius: 18px;
+        background: #173b31;
+        color: #f6faf4;
+      }
+
+      .impact .eyebrow {
+        color: #a8d1b6;
+      }
+
+      .impact h2 {
+        margin-bottom: 0;
+        font-size: clamp(1.55rem, 3vw, 2rem);
+        letter-spacing: -0.045em;
+      }
+
+      .impact p {
+        max-width: 620px;
+        margin: 0;
+        color: #d5e3d8;
+        font-size: 1.08rem;
+      }
+
+      .feedback {
+        display: grid;
+        grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
+        gap: 2.5rem;
+        margin-top: 4rem;
+      }
+
+      .feedback-intro p {
+        margin-top: 0.75rem;
+        color: var(--muted);
+      }
+
+      form {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      label {
+        font-size: 0.92rem;
+        font-weight: 650;
+      }
+
+      textarea,
+      input[type="email"] {
+        width: 100%;
+        padding: 0.8rem 0.9rem;
+        border: 1px solid #bacbc0;
+        border-radius: 9px;
+        background: var(--surface);
+        color: var(--ink);
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 130px;
+        resize: vertical;
+      }
+
+      button {
+        width: fit-content;
+        padding: 0.75rem 1.15rem;
+        border: 0;
+        border-radius: 9px;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        font: inherit;
+        font-weight: 700;
+      }
+
+      button:hover {
+        background: var(--accent-dark);
+      }
+
+      .form-note {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.82rem;
+      }
+
+      footer {
+        padding-block: 1.5rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      @media (max-width: 680px) {
+        .wrap {
+          width: min(100% - 1.5rem, 1080px);
+        }
+
+        .topbar {
+          min-height: 66px;
+        }
+
+        .topbar nav {
+          gap: 0.9rem;
+          font-size: 0.87rem;
+        }
+
+        main {
+          padding-block: 3.5rem 3.75rem;
+        }
+
+        .hero {
+          margin-bottom: 2.75rem;
+        }
+
+        .section-heading {
+          display: block;
+        }
+
+        .section-heading p {
+          margin-top: 0.4rem;
+        }
+
+        .projects,
+        .impact,
+        .feedback {
+          grid-template-columns: 1fr;
+        }
+
+        .project {
+          min-height: 235px;
+        }
+
+        .impact {
+          gap: 1rem;
+        }
+
+        .feedback {
+          gap: 1.25rem;
+          margin-top: 3rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="wrap topbar">
+      <a class="brand" href="/" aria-label="HumaFlo home">HumaFlo</a>
+      <nav aria-label="Main navigation">
+        <a href="#projects">Projects</a>
+        <a href="#feedback">Feedback</a>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">Evidence, made useful</p>
+        <h1 id="page-title">Data for real-world challenges.</h1>
+        <p class="lead">
+          HumaFlo builds clear, practical ways to explore complex issues and the evidence
+          behind them.
+        </p>
+      </section>
+
+      <section id="projects" aria-labelledby="projects-title">
+        <div class="section-heading">
+          <h2 id="projects-title">Projects</h2>
+          <p>Explore the work.</p>
+        </div>
+        <div class="projects">
+          <article class="project">
+            <span class="project-number" aria-hidden="true">01</span>
+            <h3>GAR 2025 Resilience Dashboard</h3>
+            <p>
+              An interactive guide to the UNDRR Global Assessment Report 2025, bringing
+              disaster risk and resilience evidence into one place for exploration.
+            </p>
+            <a
+              class="project-link"
+              href="https://humaflo.github.io/gar2025-resilience-dashboard/"
+            >
+              Explore the dashboard <span aria-hidden="true">→</span>
+            </a>
+          </article>
+          <article class="project">
+            <span class="project-number" aria-hidden="true">02</span>
+            <h3>Childhood stunting in Timor-Leste</h3>
+            <p>
+              A concise evidence brief on child stunting, covering prevalence, survey
+              trends, contributing factors, differences across municipalities, and
+              nutrition actions.
+            </p>
+            <a
+              class="project-link"
+              href="https://humaflo.github.io/gar2025-resilience-dashboard/timor-leste-stunting/"
+            >
+              Read the brief <span aria-hidden="true">→</span>
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <section class="impact" aria-labelledby="impact-title">
+        <div>
+          <p class="eyebrow">Why data</p>
+          <h2 id="impact-title">Understanding is a starting point.</h2>
+        </div>
+        <p>
+          Data can help people see the shape of a challenge, ask better questions, and
+          make decisions grounded in evidence. Tackling real challenges means making
+          that evidence understandable and useful—while staying honest about what it
+          can and cannot tell us.
+        </p>
+      </section>
+
+      <section class="feedback" id="feedback" aria-labelledby="feedback-title">
+        <div class="feedback-intro">
+          <p class="eyebrow">Get in touch</p>
+          <h2 id="feedback-title">Share your feedback</h2>
+          <p>Tell us what is useful, what is unclear, or what we should explore next.</p>
+        </div>
+        <form action="https://formspree.io/f/xdearnlo" method="POST">
+          <input type="hidden" name="_subject" value="Feedback from HumaFlo home">
+          <label for="email">Email <span aria-hidden="true">(optional)</span></label>
+          <input id="email" name="email" type="email" autocomplete="email">
+          <label for="message">Your feedback</label>
+          <textarea id="message" name="message" required></textarea>
+          <button type="submit">Send feedback</button>
+          <p class="form-note">Your message will be sent using Formspree.</p>
+        </form>
+      </section>
+    </main>
+
+    <footer>
+      <div class="wrap">HumaFlo · Data for real-world challenges</div>
+    </footer>
+  </body>
+</html>
