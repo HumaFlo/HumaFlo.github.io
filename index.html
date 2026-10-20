@@ -16,18 +16,22 @@
       property="og:description"
       content="Data projects to help make complex challenges easier to understand."
     >
-    <meta name="theme-color" content="#f5f7f2">
+    <meta name="theme-color" content="#FAF9F7">
     <style>
       :root {
         color-scheme: light;
-        --ink: #17332c;
-        --muted: #536b62;
-        --accent: #176b52;
-        --accent-dark: #104c3b;
-        --paper: #f5f7f2;
-        --surface: #ffffff;
-        --line: #dce5dc;
-        --soft: #e8f1e9;
+        --bg: #FAF9F7;
+        --surface: #FFFFFF;
+        --fg: #1C1917;
+        --muted: #57534E;
+        --faint: #78716C;
+        --line: #E7E5E4;
+        --hair: #D6D3D1;
+        --accent: #C2410C;
+        --accent-ink: #9A3412;
+        --accent-soft: #F6E3D7;
+        --font: "Avenir Next", "Avenir", "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
       }
 
       * {
@@ -40,75 +44,77 @@
 
       body {
         margin: 0;
-        background: var(--paper);
-        color: var(--ink);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.6;
+        background: var(--bg);
+        color: var(--fg);
+        font: 400 16px/1.6 var(--font);
+        -webkit-font-smoothing: antialiased;
       }
 
       a {
-        color: var(--accent-dark);
+        color: var(--accent-ink);
       }
 
       a:focus-visible,
       button:focus-visible,
       input:focus-visible,
       textarea:focus-visible {
-        outline: 3px solid #d48b34;
-        outline-offset: 3px;
+        outline: 2px solid var(--accent-ink);
+        outline-offset: 2px;
       }
 
       .wrap {
-        width: min(100% - 2.5rem, 1080px);
+        max-width: 1180px;
         margin-inline: auto;
+        padding-inline: clamp(1.25rem, 4vw, 2.5rem);
       }
 
       .topbar {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 76px;
+        min-height: 72px;
         border-bottom: 1px solid var(--line);
       }
 
       .brand {
-        color: var(--ink);
+        color: var(--fg);
         font-size: 1.1rem;
-        font-weight: 750;
-        letter-spacing: -0.04em;
+        font-weight: 600;
+        letter-spacing: -0.02em;
         text-decoration: none;
       }
 
       .topbar nav {
         display: flex;
-        gap: 1.5rem;
-        font-size: 0.94rem;
+        gap: 1.25rem;
+        font-size: 0.9rem;
       }
 
       .topbar nav a {
+        display: inline-flex;
+        min-height: 44px;
+        align-items: center;
         text-decoration: none;
       }
 
       .topbar nav a:hover {
         text-decoration: underline;
-        text-underline-offset: 4px;
+        text-underline-offset: 3px;
       }
 
       main {
-        padding-block: 4.75rem 5rem;
+        padding-block: 3.5rem 2rem;
       }
 
       .hero {
-        max-width: 760px;
-        margin-bottom: 3.5rem;
+        padding-bottom: 3rem;
       }
 
       .eyebrow {
-        margin: 0 0 0.8rem;
-        color: var(--accent);
-        font-size: 0.78rem;
-        font-weight: 750;
-        letter-spacing: 0.13em;
+        margin: 0 0 0.9rem;
+        color: var(--accent-ink);
+        font: 600 11px/1 var(--mono);
+        letter-spacing: 0.09em;
         text-transform: uppercase;
       }
 
@@ -120,79 +126,77 @@
       }
 
       h1 {
-        max-width: 700px;
+        max-width: 16ch;
         margin-bottom: 1rem;
-        font-size: clamp(2.5rem, 6vw, 4.8rem);
-        line-height: 1.04;
-        letter-spacing: -0.065em;
+        font-size: clamp(2.35rem, 4.6vw, 3.4rem);
+        font-weight: 600;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
       }
 
       .lead {
-        max-width: 650px;
+        max-width: 58ch;
         margin-bottom: 0;
         color: var(--muted);
-        font-size: clamp(1.08rem, 2vw, 1.25rem);
+        font-size: 1.1rem;
+        line-height: 1.55;
+      }
+
+      #projects,
+      .impact,
+      .feedback {
+        border-top: 1px solid var(--line);
+        padding-block: 2.9rem;
       }
 
       .section-heading {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
+        margin-bottom: 2rem;
       }
 
       .section-heading h2,
       .feedback h2 {
-        margin-bottom: 0;
-        font-size: clamp(1.65rem, 3vw, 2.2rem);
-        letter-spacing: -0.045em;
+        margin-bottom: 0.4rem;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
       }
 
       .section-heading p {
-        margin-bottom: 0.2rem;
+        margin-bottom: 0;
         color: var(--muted);
       }
 
       .projects {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 1.15rem;
+        gap: 1.6rem 2.5rem;
       }
 
       .project {
         display: flex;
-        min-height: 260px;
         flex-direction: column;
         align-items: flex-start;
-        padding: clamp(1.4rem, 3vw, 2rem);
-        border: 1px solid var(--line);
-        border-radius: 18px;
-        background: var(--surface);
-        box-shadow: 0 8px 30px rgb(23 51 44 / 4%);
+        min-width: 0;
+        padding-top: 0.85rem;
+        border-top: 2px solid var(--fg);
       }
 
       .project-number {
-        display: grid;
-        width: 40px;
-        height: 40px;
-        margin-bottom: 1.1rem;
-        place-items: center;
-        border-radius: 12px;
-        background: var(--soft);
-        color: var(--accent-dark);
-        font-size: 0.9rem;
-        font-weight: 750;
+        margin-bottom: 0.8rem;
+        color: var(--faint);
+        font: 500 12px/1.6 var(--mono);
       }
 
       .project h3 {
-        margin-bottom: 0.55rem;
-        font-size: 1.35rem;
-        letter-spacing: -0.035em;
+        margin-bottom: 0.45rem;
+        font-size: 1rem;
+        font-weight: 600;
       }
 
       .project p {
-        margin-bottom: 1.4rem;
+        max-width: 62ch;
+        margin-bottom: 1rem;
         color: var(--muted);
       }
 
@@ -200,75 +204,74 @@
         display: inline-flex;
         gap: 0.45rem;
         align-items: center;
+        min-height: 44px;
         margin-top: auto;
-        font-weight: 700;
+        font-weight: 600;
         text-decoration-thickness: 1px;
-        text-underline-offset: 4px;
+        text-underline-offset: 3px;
       }
 
       .project-link:hover {
-        color: var(--accent);
+        color: var(--fg);
       }
 
       .impact {
         display: grid;
-        grid-template-columns: minmax(180px, 0.7fr) 1.3fr;
-        gap: 2rem;
+        grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
+        gap: 2.5rem;
         align-items: start;
-        margin-top: 3rem;
-        padding: clamp(1.5rem, 4vw, 2.5rem);
-        border-radius: 18px;
-        background: #173b31;
-        color: #f6faf4;
       }
 
       .impact .eyebrow {
-        color: #a8d1b6;
+        margin: 0.6rem 0 0;
       }
 
       .impact h2 {
         margin-bottom: 0;
-        font-size: clamp(1.55rem, 3vw, 2rem);
-        letter-spacing: -0.045em;
+        font-size: 1.5rem;
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.01em;
       }
 
       .impact p {
-        max-width: 620px;
+        max-width: 62ch;
         margin: 0;
-        color: #d5e3d8;
-        font-size: 1.08rem;
+        color: var(--muted);
       }
 
       .feedback {
         display: grid;
         grid-template-columns: minmax(220px, 0.8fr) 1.2fr;
         gap: 2.5rem;
-        margin-top: 4rem;
       }
 
-      .feedback-intro p {
+      .feedback-intro > p:not(.eyebrow) {
+        max-width: 38ch;
         margin-top: 0.75rem;
         color: var(--muted);
       }
 
       form {
         display: grid;
-        gap: 0.8rem;
+        gap: 0.65rem;
       }
 
       label {
-        font-size: 0.92rem;
-        font-weight: 650;
+        margin-top: 0.35rem;
+        font-size: 0.88rem;
+        font-weight: 600;
       }
 
       textarea,
       input[type="email"] {
         width: 100%;
-        padding: 0.8rem 0.9rem;
-        border: 1px solid #bacbc0;
-        border-radius: 9px;
+        min-height: 44px;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid var(--hair);
+        border-radius: 8px;
         background: var(--surface);
-        color: var(--ink);
+        color: var(--fg);
         font: inherit;
       }
 
@@ -279,80 +282,77 @@
 
       button {
         width: fit-content;
-        padding: 0.75rem 1.15rem;
-        border: 0;
-        border-radius: 9px;
-        background: var(--accent);
-        color: #fff;
+        min-height: 44px;
+        margin-top: 0.2rem;
+        padding: 0 1.1rem;
+        border: 1px solid var(--fg);
+        border-radius: 8px;
+        background: var(--fg);
+        color: var(--bg);
         cursor: pointer;
-        font: inherit;
-        font-weight: 700;
+        font: 600 14px/1 var(--font);
+        letter-spacing: 0.02em;
       }
 
       button:hover {
-        background: var(--accent-dark);
+        background: var(--muted);
+        border-color: var(--muted);
       }
 
       .form-note {
         margin: 0;
-        color: var(--muted);
-        font-size: 0.82rem;
+        color: var(--faint);
+        font-size: 0.8rem;
       }
 
       footer {
-        padding-block: 1.5rem;
+        padding-block: 1.5rem 2rem;
         border-top: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 0.88rem;
+        color: var(--faint);
+        font-size: 0.8rem;
       }
 
-      @media (max-width: 680px) {
-        .wrap {
-          width: min(100% - 1.5rem, 1080px);
-        }
-
-        .topbar {
-          min-height: 66px;
-        }
-
-        .topbar nav {
-          gap: 0.9rem;
-          font-size: 0.87rem;
-        }
-
-        main {
-          padding-block: 3.5rem 3.75rem;
-        }
-
-        .hero {
-          margin-bottom: 2.75rem;
-        }
-
-        .section-heading {
-          display: block;
-        }
-
-        .section-heading p {
-          margin-top: 0.4rem;
-        }
-
+      @media (max-width: 940px) {
         .projects,
         .impact,
         .feedback {
           grid-template-columns: 1fr;
         }
 
-        .project {
-          min-height: 235px;
-        }
-
-        .impact {
-          gap: 1rem;
-        }
-
+        .impact,
         .feedback {
           gap: 1.25rem;
-          margin-top: 3rem;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .topbar {
+          min-height: 64px;
+        }
+
+        .topbar nav {
+          gap: 0.5rem;
+          font-size: 0.82rem;
+        }
+
+        main {
+          padding-top: 2.75rem;
+        }
+
+        .hero {
+          padding-bottom: 2.25rem;
+        }
+
+        #projects,
+        .impact,
+        .feedback {
+          padding-block: 2.25rem;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
         }
       }
     </style>
@@ -416,8 +416,8 @@
 
       <section class="impact" aria-labelledby="impact-title">
         <div>
-          <p class="eyebrow">Why data</p>
           <h2 id="impact-title">Understanding is a starting point.</h2>
+          <p class="eyebrow">Why data</p>
         </div>
         <p>
           Data can help people see the shape of a challenge, ask better questions, and
@@ -429,8 +429,8 @@
 
       <section class="feedback" id="feedback" aria-labelledby="feedback-title">
         <div class="feedback-intro">
-          <p class="eyebrow">Get in touch</p>
           <h2 id="feedback-title">Share your feedback</h2>
+          <p class="eyebrow">Get in touch</p>
           <p>Tell us what is useful, what is unclear, or what we should explore next.</p>
         </div>
         <form action="https://formspree.io/f/xdearnlo" method="POST">
