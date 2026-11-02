@@ -337,8 +337,17 @@
       }
 
       .footer-content .page-views {
+        display: flex;
         margin-left: auto;
+        align-items: center;
+        gap: 0.4rem;
         text-align: right;
+      }
+
+      .page-views img {
+        display: block;
+        width: auto;
+        height: 1.6em;
       }
 
       @media (max-width: 940px) {
@@ -516,49 +525,38 @@
     <footer>
       <div class="wrap footer-content">
         <p>Impactful data, for real-world challenges.</p>
-        <p
-          id="page-views"
-          class="page-views"
-          role="status"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          Page views unavailable
+        <p id="page-views" class="page-views">
+          <span id="page-views-status" role="status" aria-live="polite">Views loading…</span>
+          <img
+            src="https://hits.sh/humaflo.github.io.svg?label=Views&amp;labelColor=78716c&amp;color=57534e"
+            alt="Views counter showing the homepage visit total"
+            width="60"
+            height="20"
+            loading="eager"
+            decoding="async"
+            referrerpolicy="no-referrer"
+            hidden
+          >
         </p>
       </div>
     </footer>
-    <script
-      async
-      data-goatcounter="https://humaflo.goatcounter.com/count"
-      data-goatcounter-settings='{"referrer":""}'
-      src="https://gc.zgo.at/count.js"
-    ></script>
     <script>
       (() => {
-        const counter = document.querySelector("#page-views");
-        const tracker = document.querySelector("script[data-goatcounter]");
-        if (!counter || !tracker) return;
+        const status = document.querySelector("#page-views-status");
+        const badge = document.querySelector("#page-views img");
+        if (!status || !badge) return;
 
-        counter.textContent = "Page views loading…";
-        const countUrl = new URL("/counter//.json", tracker.dataset.goatcounter);
-
-        fetch(countUrl, { mode: "cors", cache: "no-store" })
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Counter returned HTTP ${response.status}`);
-            }
-            return response.json();
-          })
-          .then((data) => {
-            if (typeof data.count !== "string" || !data.count.trim()) {
-              throw new TypeError("Counter response did not contain a valid page-view count");
-            }
-            counter.textContent = `Page views: ${data.count}`;
-          })
-          .catch((error) => {
-            counter.textContent = "Page views unavailable";
-            console.error("Unable to load HumaFlo's page-view counter.", error);
-          });
+        badge.addEventListener("load", () => status.remove(), { once: true });
+        badge.addEventListener(
+          "error",
+          () => {
+            badge.hidden = true;
+            status.textContent = "Views unavailable";
+            console.error("Unable to load HumaFlo's hosted view counter.");
+          },
+          { once: true }
+        );
+        badge.hidden = false;
       })();
     </script>
   </body>
