@@ -200,12 +200,25 @@
         color: var(--muted);
       }
 
+      .project-preview {
+        width: 100%;
+        margin: auto 0 0.55rem;
+      }
+
+      .project-preview img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
       .project-link {
         display: inline-flex;
         gap: 0.45rem;
         align-items: center;
         min-height: 44px;
-        margin-top: auto;
         font-weight: 600;
         text-decoration-thickness: 1px;
         text-underline-offset: 3px;
@@ -388,6 +401,16 @@
               An interactive guide to the UNDRR Global Assessment Report 2025, bringing
               disaster risk and resilience evidence into one place for exploration.
             </p>
+            <figure class="project-preview">
+              <img
+                src="/images/projects/gar-2025-resilience-dashboard.png"
+                alt="GAR 2025 dashboard showing reported losses above and indirect cascading losses below the waterline"
+                width="967"
+                height="442"
+                loading="lazy"
+                decoding="async"
+              >
+            </figure>
             <a
               class="project-link"
               href="https://humaflo.github.io/gar2025-resilience-dashboard/"
@@ -403,6 +426,16 @@
               trends, contributing factors, differences across municipalities, and
               nutrition actions.
             </p>
+            <figure class="project-preview">
+              <img
+                src="/images/projects/timor-leste-stunting.png"
+                alt="Timor-Leste municipal stunting dashboard with a map and national prevalence summary"
+                width="1019"
+                height="573"
+                loading="lazy"
+                decoding="async"
+              >
+            </figure>
             <a
               class="project-link"
               href="https://humaflo.github.io/timor-leste-stunting/"
@@ -417,6 +450,16 @@
               An interactive look at the Rural Roads Master Plan and Investment Strategy,
               including road conditions, planned investments, and an indicative planning model.
             </p>
+            <figure class="project-preview">
+              <img
+                src="/images/projects/rural-road-masterplan.png"
+                alt="Rural road investment planning dashboard with budget and work-share controls and projected results"
+                width="1026"
+                height="637"
+                loading="lazy"
+                decoding="async"
+              >
+            </figure>
             <a class="project-link" href="/rural-roads-dashboard/">
               Explore the dashboard <span aria-hidden="true">→</span>
             </a>
