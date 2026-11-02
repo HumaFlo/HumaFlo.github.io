@@ -325,6 +325,22 @@
         font-size: 0.8rem;
       }
 
+      .footer-content {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1.5rem;
+      }
+
+      .footer-content p {
+        margin: 0;
+      }
+
+      .footer-content .page-views {
+        margin-left: auto;
+        text-align: right;
+      }
+
       @media (max-width: 940px) {
         .projects,
         .impact,
@@ -498,7 +514,52 @@
     </main>
 
     <footer>
-      <div class="wrap">Impactful data, for real-world challenges</div>
+      <div class="wrap footer-content">
+        <p>Impactful data, for real-world challenges.</p>
+        <p
+          id="page-views"
+          class="page-views"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          Page views unavailable
+        </p>
+      </div>
     </footer>
+    <script
+      async
+      data-goatcounter="https://humaflo.goatcounter.com/count"
+      data-goatcounter-settings='{"referrer":""}'
+      src="https://gc.zgo.at/count.js"
+    ></script>
+    <script>
+      (() => {
+        const counter = document.querySelector("#page-views");
+        const tracker = document.querySelector("script[data-goatcounter]");
+        if (!counter || !tracker) return;
+
+        counter.textContent = "Page views loading…";
+        const countUrl = new URL("/counter//.json", tracker.dataset.goatcounter);
+
+        fetch(countUrl, { mode: "cors", cache: "no-store" })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error(`Counter returned HTTP ${response.status}`);
+            }
+            return response.json();
+          })
+          .then((data) => {
+            if (typeof data.count !== "string" || !data.count.trim()) {
+              throw new TypeError("Counter response did not contain a valid page-view count");
+            }
+            counter.textContent = `Page views: ${data.count}`;
+          })
+          .catch((error) => {
+            counter.textContent = "Page views unavailable";
+            console.error("Unable to load HumaFlo's page-view counter.", error);
+          });
+      })();
+    </script>
   </body>
 </html>
