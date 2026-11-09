@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+<title>Mikrolet — microlet routes &amp; offline map</title>
+<meta name="description" content="Mikrolet finds Dili microlet routes, areas and landmarks. Download the Dili mobility pack and use core route information offline. Unofficial proof of concept — data pending review.">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFFFF">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
+<!-- iOS Home Screen metadata -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mikrolet">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+/* =====================================================================
+   Mikrolet — Timor-Leste flag design system, v1.5.0 (skill-applied)
+   Colors (60/30/10): white page (~60%), black text/controls (~30%),
+   red CTA + yellow highlights (~10%) — alpha tints of those only.
+   Type: ONE family (system sans), exactly FOUR sizes and TWO weights:
+     --fs-d 40 display · --fs-t 21 titles · --fs-b 17 body · --fs-c 13 caption
+     weight 400 regular · 700 bold — hierarchy via size + opacity.
+   Spacing: 8-point grid (4/8/12/16/20/24/32/40/48). Radius scale:
+     --rad-s 12 controls · --rad-l 20 surfaces · pills for chips.
+   Shadows: soft, tinted to the surface — never harsh gray edges.
+   Status is carried by labels, icons, borders and wording — never by
+   color alone. All motion is gated by prefers-reduced-motion.
+   ===================================================================== */
+:root{
+  --paper:#FFFFFF;            /* 60% — page + map background */
+  --ink:#000000;              /* 30% — text, icons, route lines, controls */
+  --apri:#FFC72C;             /* 10% — flag yellow: highlights, guidance, progress */
+  --red:#DA291C;              /* 10% — flag red: the main action + active accents */
+  --on-red:#FFFFFF;           /* text on red (4.8:1) */
+  --ink-2:rgba(0,0,0,.64);    /* secondary text: opacity hierarchy, not a new color */
+  --hair:rgba(0,0,0,.16);     /* hairline dividers / quiet borders */
+  --tint:rgba(0,0,0,.06);     /* pressed / track tint */
+  --apri-tint:rgba(255,199,44,.16); /* yellow tint — highlighted surfaces */
+  --apri-hint:rgba(255,199,44,.08); /* 5%-style accent wash on secondary elements */
+  --on-apri:#000000;          /* constant: text on yellow in both modes (14.6:1) */
+  --scrim:rgba(0,0,0,.55);
+  --sh-1:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(0,0,0,.07);   /* resting surfaces */
+  --sh-2:0 12px 32px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);  /* floating surfaces */
+  --sh-up:0 -10px 24px rgba(0,0,0,.09);                          /* dock / sheet top edge */
+  --glow:0 0 0 4px rgba(255,199,44,.22);                         /* success halo */
+  --nav-h:88px;
+  --rad-s:12px;               /* controls: buttons, chips, inputs */
+  --rad-l:20px;               /* surfaces: cards, sheet, banners, search */
+  --f:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue','Segoe UI',Roboto,Arial,sans-serif;
+  --fs-d:40px; --fs-t:21px; --fs-b:17px; --fs-c:13px;
+}
+@media (prefers-color-scheme: dark){ :root{
+  --paper:#000000;            /* black page in dark mode — same flag hues */
+  --ink:#FFFFFF;              /* white ink */
+  --ink-2:rgba(255,255,255,.68);
+  --hair:rgba(255,255,255,.22);
+  --tint:rgba(255,255,255,.1);
+  --apri-tint:rgba(255,199,44,.16);
+  --apri-hint:rgba(255,199,44,.08);
+  --scrim:rgba(0,0,0,.72);
+  --sh-1:0 1px 2px rgba(0,0,0,.5),0 4px 16px rgba(0,0,0,.4);
+  --sh-2:0 12px 32px rgba(0,0,0,.6),0 2px 8px rgba(0,0,0,.4);
+  --sh-up:0 -10px 24px rgba(0,0,0,.55);
+}}
+/* ============ base ============ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--f);
+  background:var(--paper); color:var(--ink);
+  font-size:var(--fs-b); line-height:1.5; overscroll-behavior-y:none;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:4px}
+.sheet:focus,.sheet:focus-visible{outline:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+#app{max-width:520px;margin:0 auto;min-height:100dvh;position:relative;
+  padding-bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px))}
+/* ============ top app bar — wordmark + quiet pack status ============ */
+.appbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:8px;
+  height:56px;padding:0 8px;background:var(--paper);border-bottom:1px solid var(--hair);
+  padding-top:env(safe-area-inset-top,0px)}
+.appbar .title{font-weight:700;font-size:var(--fs-t);flex:1;letter-spacing:-.01em;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1;padding-left:8px}
+.appbar .spacer{width:44px;flex:none}
+.pstat{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-c);font-weight:400;flex:none;
+  border:1px solid var(--hair);border-radius:999px;
+  padding:8px 12px;background:transparent;color:var(--ink-2);cursor:pointer;max-width:46%}
+.pstat svg{width:14px;height:14px;fill:currentColor;flex:none}
+.icon-btn{width:48px;height:48px;border:none;background:transparent;border-radius:var(--rad-s);
+  display:inline-flex;align-items:center;justify-content:center;position:relative;
+  color:var(--ink);flex:none;overflow:hidden;cursor:pointer}
+.icon-btn svg{width:24px;height:24px;fill:currentColor}
+/* ============ bottom navigation — plain labels; red pill only when selected ============ */
+.navbar{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;
+  height:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  background:var(--paper);border-top:1px solid var(--hair);z-index:40;
+  display:flex;justify-content:space-around;align-items:flex-start}
+.navbar button{flex:1;max-width:130px;border:none;background:transparent;cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0 12px;
+  color:var(--ink-2);font-size:var(--fs-c);font-weight:400;position:relative}
+.navbar .pill{width:64px;height:36px;border-radius:999px;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s}
+.navbar button[aria-current="page"]{color:var(--red);font-weight:700}
+.navbar button[aria-current="page"] .pill{background:var(--red);color:var(--on-red)}
+.navbar svg{width:26px;height:26px;fill:currentColor}
+/* ============ sections — 8-pt rhythm, hairlines, not identical cards ============ */
+.view{padding:8px 16px 24px;animation:viewin .22s ease}
+@keyframes viewin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{padding:4px 0 0;margin:24px 0;position:relative}
+.card.punch,.card.elev{border:none;border-radius:var(--rad-l)}
+.card.elev{background:var(--paper);box-shadow:var(--sh-1)}
+.card-title{font-weight:700;font-size:var(--fs-t);margin:0 0 8px;letter-spacing:-.01em;line-height:1.25}
+.card-sub{font-size:var(--fs-b);color:var(--ink-2);margin:0}
+h2.sec{font-weight:700;font-size:var(--fs-c);color:var(--ink-2);text-transform:uppercase;letter-spacing:.08em;
+  margin:32px 2px 8px;padding-top:16px;border-top:1px solid var(--hair);line-height:1.3}
+h2.sec:first-child{border-top:none;padding-top:8px;margin-top:16px}
+/* ============ banners — quiet notes; level is written, not colored ============ */
+.banner{display:flex;gap:12px;align-items:flex-start;padding:12px 2px;
+  margin:12px 0;font-size:var(--fs-b);line-height:1.45;border-bottom:1px solid var(--hair)}
+.banner svg{width:20px;height:20px;fill:currentColor;flex:none;margin-top:2px}
+.banner.info,.banner.warn{color:var(--ink-2)}
+.banner.warn{border-left:3px solid var(--apri);border-radius:3px;padding-left:12px;color:var(--ink)}
+.banner.err{border-left:3px solid var(--red);border-radius:3px;padding-left:12px}
+.banner.ok{background:var(--apri-tint);border:none;border-radius:var(--rad-l);
+  padding:16px;color:var(--on-apri);box-shadow:var(--glow)}
+.banner.ok svg{animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+@keyframes pop{from{transform:scale(.4)}to{transform:scale(1)}}
+/* ============ lists — plain rows with hairline dividers ============ */
+.rrow{display:flex;align-items:center;gap:16px;padding:16px 2px;min-height:72px;
+  border-bottom:1px solid var(--hair);cursor:pointer;width:100%;position:relative;overflow:hidden}
+.rrow:active{background:var(--tint)}
+.rrow .lead{width:48px;height:48px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:transparent;color:var(--ink);border:1.5px solid var(--ink);
+  border-radius:50%;font-weight:700;font-size:var(--fs-b);line-height:1;font-variant-numeric:tabular-nums}
+.rrow.isfav .lead,.lead.sel{background:var(--red);color:var(--on-red);border-color:var(--red)}
+.rrow .txt{flex:1;min-width:0;display:block}
+.rrow .t1{display:block;font-weight:700;font-size:var(--fs-b);line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .t2{display:block;font-size:var(--fs-c);color:var(--ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rrow .trail{color:var(--ink);flex:none}
+.list-item{display:flex;align-items:center;gap:16px;padding:12px 2px;min-height:64px;
+  position:relative;overflow:hidden;cursor:pointer;width:100%;border:none;background:transparent;
+  text-align:left;border-bottom:1px solid var(--hair);border-radius:0}
+.list-item:active{background:var(--tint)}
+.list-item .lead{width:48px;height:48px;border-radius:50%;flex:none;
+  display:flex;align-items:center;justify-content:center;background:transparent;color:var(--ink);
+  border:1.5px solid var(--ink)}
+.list-item .lead svg{width:22px;height:22px;fill:currentColor}
+.list-item .txt{flex:1;min-width:0;display:block}
+.list-item .t1{display:block;font-size:var(--fs-b);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item .t2{display:block;font-size:var(--fs-c);color:var(--ink-2);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item .trail{color:var(--ink-2);flex:none}
+.list-item svg{width:24px;height:24px;fill:currentColor}
+.list-item.static{cursor:default}
+/* route numbers attached to a destination row */
+.numchips{display:inline-flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.numchip{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:24px;
+  padding:0 8px;border:1.5px solid var(--ink);border-radius:999px;
+  font-size:var(--fs-c);font-weight:700;color:var(--ink);background:transparent;font-variant-numeric:tabular-nums}
+/* ============ landmarks (home) — six places, two quiet columns ============ */
+.lm-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 20px}
+.lm{display:flex;align-items:flex-start;gap:12px;padding:12px 2px;background:transparent;border:none;
+  border-radius:var(--rad-s);text-align:left;cursor:pointer;min-width:0}
+.lm:active{background:var(--tint)}
+.lm .lead{width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;
+  background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.lm .lead svg{width:21px;height:21px;fill:currentColor}
+.lm .txt{min-width:0;display:block;flex:1}
+.lm .t1{display:block;font-size:var(--fs-b);font-weight:700;line-height:1.25;color:var(--ink)}
+.lm .t2{display:block;font-size:var(--fs-c);color:var(--ink-2);line-height:1.3}
+.lm .numchips{margin-top:8px;gap:4px}
+.lm .numchip{min-width:28px;height:24px;padding:0 8px}
+/* quiet pointer to the full route list on the map */
+.quietlink{display:inline-flex;align-items:center;gap:8px;margin:8px 2px 0;padding:12px 2px;background:transparent;border:none;
+  color:var(--ink-2);font-size:var(--fs-b);font-weight:700;cursor:pointer}
+.quietlink svg{width:17px;height:17px;fill:currentColor}
+.quietlink:active{color:var(--ink)}
+/* ============ masthead (home) — the task first, F-pattern ============ */
+.mast{padding:24px 2px 8px;position:relative}
+.mast .kicker{font-size:var(--fs-c);font-weight:700;color:var(--ink-2);text-transform:uppercase;
+  letter-spacing:.08em;margin:0 0 8px}
+.mast h1{font-weight:700;font-size:var(--fs-d);line-height:1.08;letter-spacing:-.02em;
+  margin:0;max-width:14ch}
+.mast .hero-sub{font-size:var(--fs-b);color:var(--ink-2);margin:12px 0 0;max-width:26ch;line-height:1.45}
+/* ============ buttons — outlined by default; red fills only key actions ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;
+  padding:0 20px;border-radius:var(--rad-s);
+  border:1.5px solid var(--ink);font-weight:700;font-size:var(--fs-b);
+  cursor:pointer;position:relative;overflow:visible;text-decoration:none;background:transparent;color:var(--ink);
+  transition:background .12s,box-shadow .2s}
+.btn svg{width:19px;height:19px;fill:currentColor;flex:none}
+.btn:active{background:var(--tint)}
+.btn.filled,.btn.ink{background:var(--red);color:var(--on-red);border-color:var(--red);box-shadow:var(--sh-1)}
+.btn.filled:active,.btn.ink:active{background:var(--red);filter:brightness(.94)}
+.btn.filled:disabled,.btn.ink:disabled{background:var(--tint);color:var(--ink-2);
+  border-color:var(--hair);cursor:default;filter:none;box-shadow:none}
+.btn.tonal{background:transparent;border-color:var(--ink)}
+.btn.errbtn{background:transparent;border-color:var(--hair);color:var(--ink)}
+.btn.txt{background:transparent;border:none;color:var(--ink);padding:0 16px;height:48px;
+  text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px;
+  text-decoration-color:var(--hair);font-weight:700}
+.btn.txt:active{background:transparent;opacity:.7}
+.btn.full{width:100%}
+/* the one key action on home: "Find my route", docked in the thumb zone */
+.btn.cta{height:56px;width:100%;font-size:var(--fs-b);background:var(--red);color:var(--on-red);
+  border-color:var(--red);font-weight:700}
+.btn.cta:active{filter:brightness(.96)}
+.cta-dock{position:sticky;z-index:6;bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0px));
+  background:var(--paper);padding:12px 0 8px;margin:12px 0 0;box-shadow:var(--sh-up);
+  border-top:1px solid var(--hair)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;
+  border-radius:999px;border:1.5px solid var(--ink);
+  background:transparent;color:var(--ink);font-size:var(--fs-c);font-weight:700;cursor:pointer;
+  position:relative;overflow:hidden;flex:none;
+  transition:background .15s}
+.chip[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:var(--on-red)}
+.chip .dot{width:12px;height:12px;border-radius:2px;flex:none}
+.chip svg{width:17px;height:17px;fill:currentColor}
+.chip.hilite{background:var(--apri-tint);border-color:var(--apri);color:var(--on-apri)}
+.chiprow{display:flex;gap:8px;overflow-x:auto;padding:8px 2px;scrollbar-width:none}
+.chiprow::-webkit-scrollbar{display:none}
+.chip.static{cursor:default;border-color:var(--hair);color:var(--ink-2);font-weight:400}
+.chip.needs{border-style:dashed;border-color:var(--ink);color:var(--ink);font-weight:700}
+/* ============ search bar — quiet field, never a blank screen ============ */
+.searchbar{display:flex;align-items:center;gap:12px;height:56px;
+  border-radius:var(--rad-l);
+  border:1.5px solid var(--ink);background:var(--paper);padding:0 12px 0 16px;margin:16px 0 4px}
+.searchbar svg{width:22px;height:22px;fill:var(--ink-2);flex:none}
+.searchbar input{flex:1;border:none;background:transparent;outline:none;min-width:0;font-size:var(--fs-b)}
+.searchbar input::placeholder{color:var(--ink-2)}
+.searchbar .clear{width:36px;height:36px;border:none;background:transparent;border-radius:50%;
+  color:var(--ink-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.searchbar .clear svg{width:18px;height:18px;fill:currentColor}
+/* ============ selects / inputs ============ */
+.field{display:flex;flex-direction:column;gap:8px;flex:1;min-width:0}
+.field label{font-size:var(--fs-c);font-weight:700;color:var(--ink-2);padding-left:2px;letter-spacing:.04em;text-transform:uppercase}
+.field select,.field textarea,.field input{height:56px;
+  border-radius:var(--rad-s);
+  border:1.5px solid var(--ink);background:var(--paper);padding:0 16px;
+  outline:none;width:100%;appearance:none}
+.field textarea{height:112px;padding:12px 16px;resize:vertical}
+.field select:focus,.field textarea:focus,.field input:focus{border-width:2px;padding-left:15.5px}
+/* ============ segmented buttons ============ */
+.seg{display:flex;border:1.5px solid var(--ink);border-radius:var(--rad-s);overflow:hidden;margin:8px 0}
+.seg button{flex:1;height:48px;border:none;background:transparent;cursor:pointer;
+  font-size:var(--fs-b);font-weight:400;color:var(--ink);position:relative;overflow:hidden}
+.seg button+button{border-left:1.5px solid var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--red);color:var(--on-red);font-weight:700}
+/* ============ route hero (detail) — the number does the talking ============ */
+.hero{overflow:hidden;margin:16px 0 8px}
+.hero .head{padding:8px 2px 16px;color:var(--ink);display:flex;align-items:center;gap:16px;
+  border-bottom:1px solid var(--hair)}
+.hero .num{width:72px;height:72px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:transparent;border:2px solid var(--ink);color:var(--ink);
+  border-radius:50%;font-weight:700;font-size:var(--fs-d);line-height:1;font-variant-numeric:tabular-nums}
+.hero .head .nm{font-weight:700;font-size:var(--fs-t);line-height:1.2;letter-spacing:-.01em}
+.hero .head .rt{font-size:var(--fs-c);color:var(--ink-2);margin-top:4px}
+.hero .body{padding:8px 2px 4px}
+/* ============ stops timeline — plain knots; next/dest carry a yellow knot ============ */
+.timeline{position:relative;margin:8px 0 8px 8px}
+.stop{display:flex;gap:16px;position:relative;padding-bottom:4px}
+.stop .rail{width:20px;flex:none;display:flex;flex-direction:column;align-items:center}
+.stop .rail .knot{width:16px;height:16px;border-radius:50%;
+  border:2px solid var(--ink);background:var(--paper);z-index:1;margin-top:16px}
+.stop .rail .knot.next{background:var(--apri);border-color:var(--ink)}
+.stop .rail .knot.dest{background:var(--apri);border-color:var(--ink);box-shadow:var(--glow)}
+.stop .rail .line{flex:1;width:2px;background:var(--hair);margin-top:-8px}
+.stop .body{flex:1;padding:8px 0 12px;min-width:0}
+.stop .t1{font-weight:700;font-size:var(--fs-b)}
+.stop .t2{font-size:var(--fs-c);color:var(--ink-2)}
+.stop .go{margin-top:8px}
+/* ============ progress ============ */
+.prog{height:12px;border-radius:999px;background:var(--tint);
+  overflow:hidden;margin:12px 0 4px}
+.prog>i{display:block;height:100%;background:var(--apri);border-radius:999px;transition:width .25s;width:0}
+/* ============ bottom sheet ============ */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:60;opacity:0;
+  transition:opacity .2s;pointer-events:none}
+.scrim.show{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);width:100%;max-width:520px;
+  bottom:0;z-index:61;background:var(--paper);border-top:1px solid var(--hair);
+  border-radius:var(--rad-l) var(--rad-l) 0 0;padding:8px 20px calc(24px + env(safe-area-inset-bottom,0px));
+  max-height:86dvh;overflow-y:auto;transition:transform .25s ease;transform:translate(-50%,105%);
+  box-shadow:var(--sh-2)}
+.sheet.show{transform:translate(-50%,0)}
+.sheet .handle{width:36px;height:4px;border-radius:999px;background:var(--hair);margin:8px auto 12px}
+.sheet h3{margin:0 0 8px;font-weight:700;font-size:var(--fs-t);line-height:1.2;letter-spacing:-.01em}
+/* ============ snackbar ============ */
+.snack{position:fixed;left:50%;transform:translate(-50%,20px);bottom:calc(var(--nav-h) + 12px + env(safe-area-inset-bottom,0px));
+  background:var(--ink);color:var(--paper);
+  padding:12px 20px;border-radius:999px;
+  z-index:70;font-size:var(--fs-b);font-weight:400;max-width:min(92vw,480px);
+  opacity:0;transition:all .2s;pointer-events:none;box-shadow:var(--sh-2)}
+.snack.show{opacity:1;transform:translate(-50%,0)}
+/* ============ status line — text first, quiet ============ */
+.statusrow{display:flex;gap:16px;flex-wrap:wrap;margin:8px 0 0}
+.stat{display:inline-flex;align-items:center;gap:8px;font-size:var(--fs-c);font-weight:400;color:var(--ink-2)}
+.stat .dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+.stat.net-off{color:var(--ink);font-weight:700}
+.stat.net-off .dot{background:transparent;border:2px solid currentColor}
+.stat.pack-ok{color:var(--ink)}
+.stat svg{width:14px;height:14px;fill:currentColor}
+/* quiet pack status line under the home task */
+.packline{display:flex;align-items:center;gap:8px;font-size:var(--fs-c);color:var(--ink-2);
+  margin:12px 2px 0;padding:0}
+.packline svg{width:16px;height:16px;fill:var(--apri);flex:none}
+.packline b{color:var(--ink);font-weight:700}
+.packline button{border:none;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;
+  text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--hair)}
+/* ============ common destinations (home) ============ */
+.dest .numchip{margin-top:4px}
+/* ============ rich empty states — guidance, never a dead end ============ */
+.empty2{display:flex;flex-direction:column;align-items:center;text-align:center;
+  padding:32px 16px;margin:16px 0}
+.empty2 .ring{width:64px;height:64px;border-radius:50%;background:var(--apri-tint);
+  display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.empty2 .ring svg{width:30px;height:30px;fill:var(--ink)}
+.empty2 .t1{font-weight:700;font-size:var(--fs-t);line-height:1.25;max-width:22ch}
+.empty2 .t2{font-size:var(--fs-b);color:var(--ink-2);margin:8px 0 0;max-width:30ch;line-height:1.45}
+.empty2 .btn-row{justify-content:center;margin-top:16px}
+/* ============ add-to-home-screen hint — 5% accent wash, dismissible ============ */
+.a2hs{display:flex;align-items:center;gap:12px;border:1px solid var(--hair);background:var(--apri-hint);
+  border-radius:var(--rad-l);padding:12px 8px 12px 16px;
+  margin:24px 0 8px;position:relative}
+.a2hs .ic{width:20px;height:20px;fill:var(--ink);flex:none}
+.a2hs .t1{font-weight:700;font-size:var(--fs-b);line-height:1.3}
+.a2hs .t2{font-size:var(--fs-c);color:var(--ink-2)}
+.a2hs .x{margin-left:auto;flex:none;width:40px;height:40px;color:var(--ink-2)}
+/* ============ map ============ */
+.mapwrap{position:relative;margin:0 -16px;height:calc(100dvh - var(--nav-h) - 56px - env(safe-area-inset-top,0px) - 96px);
+  background:var(--paper);border-bottom:1px solid var(--hair);overflow:hidden;touch-action:none;cursor:grab}
+.mapwrap:active{cursor:grabbing}
+#mapsvg{width:100%;height:100%;display:block;user-select:none}
+.basemap image{filter:grayscale(1)}
+@media (prefers-color-scheme: dark){ .basemap image{filter:grayscale(1) invert(.92) brightness(.9)} }
+.map-attr{position:absolute;left:12px;bottom:8px;z-index:5;font-size:var(--fs-c);font-weight:400;
+  color:var(--ink);background:var(--paper);border:1px solid var(--hair);border-radius:8px;padding:2px 8px}
+.map-ctl{position:absolute;right:16px;bottom:20px;display:flex;flex-direction:column;gap:8px;z-index:5}
+.map-ctl .icon-btn{background:var(--paper);border:1.5px solid var(--ink);color:var(--ink);
+  border-radius:var(--rad-s);box-shadow:var(--sh-1)}
+.mland{cursor:pointer;transform-box:fill-box;transform-origin:center}
+.mland text{font-size:12.5px;font-weight:700;fill:var(--ink);
+  paint-order:stroke;stroke:var(--paper);stroke-width:3px;stroke-linejoin:round}
+/* route states: ordinary lines black; the selected line is flag-red
+   on a black casing — distinct by color AND width, badge inverts */
+#mapg.hasSel path[data-route]:not(.sel){opacity:.35}
+#mapg path[data-route].sel{stroke:var(--red)!important;stroke-width:4.4!important}
+#mapg .term{fill:var(--ink)}
+#mapg .term.sel{fill:var(--red);stroke:var(--ink);stroke-width:1.4}
+#mapg .numbadge circle{fill:var(--paper);stroke:var(--ink);stroke-width:1.8}
+#mapg .numbadge text{fill:var(--ink);font-weight:700}
+#mapg .numbadge.sel circle{fill:var(--red)}
+#mapg .numbadge.sel text{fill:var(--on-red)}
+.meloc-ring{transform-box:fill-box;transform-origin:center;animation:locpulse 1.8s ease-out infinite}
+@keyframes locpulse{0%{transform:scale(.5);opacity:.8}70%{transform:scale(2.4);opacity:0}100%{transform:scale(2.4);opacity:0}}
+@media (prefers-reduced-motion: reduce){.meloc-ring{animation:none;display:none}}
+/* ============ trip ============ */
+.trip-dest{display:flex;align-items:center;gap:16px;background:transparent;color:var(--ink);
+  border:1.5px solid var(--ink);border-radius:var(--rad-l);
+  padding:16px;margin:16px 0}
+.trip-dest svg{width:24px;height:24px;fill:currentColor;flex:none}
+.trip-dest .big{font-weight:700;font-size:var(--fs-t);line-height:1.25}
+.trip-dest .sm{font-size:var(--fs-c);color:var(--ink-2)}
+.trip-state{font-weight:700;font-size:var(--fs-t);text-align:center;padding:20px 8px;line-height:1.3;letter-spacing:-.01em}
+.trip-state.approach{background:var(--apri-tint);border-radius:var(--rad-l);
+  border-left:4px solid var(--apri);display:block;margin:0 auto;padding:16px}
+.trip-state.arrived{background:var(--apri);color:var(--on-apri);border-radius:var(--rad-l);display:block;
+  margin:0 auto;padding:24px 16px;box-shadow:var(--glow)}
+.trip-state.arrived svg{width:44px;height:44px;fill:var(--on-apri);display:block;margin:0 auto 8px;
+  animation:pop .4s cubic-bezier(.2,1.4,.4,1)}
+.trip-state .sub{display:block;font-weight:400;font-size:var(--fs-b);margin-top:8px}
+.trip-dist{font-size:var(--fs-b);color:var(--ink-2);text-align:center;margin-bottom:8px;font-weight:400;font-variant-numeric:tabular-nums}
+/* ============ misc ============ */
+.kv{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;font-size:var(--fs-b);border-bottom:1px solid var(--hair)}
+.kv:last-child{border-bottom:none}
+.kv b{font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+.muted{color:var(--ink-2)}
+.small{font-size:var(--fs-c)}
+.center{text-align:center}
+.empty{padding:40px 16px;font-size:var(--fs-b);text-align:center;color:var(--ink-2)}
+.empty svg{width:48px;height:48px;fill:var(--hair);margin-bottom:8px}
+.spin{width:20px;height:20px;border-radius:50%;border:2.5px solid var(--tint);
+  border-top-color:var(--ink);animation:spin 1s linear infinite;display:inline-block;vertical-align:-5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.fadein{animation:viewin .25s ease}
+a{color:var(--ink);text-decoration-thickness:1.5px;text-underline-offset:3px}
+.ripple-ink{position:absolute;border-radius:50%;background:currentColor;opacity:.12;
+  transform:scale(0);animation:rip .45s ease-out forwards;pointer-events:none}
+@keyframes rip{to{transform:scale(2.6);opacity:0}}
+.step{display:flex;gap:16px;margin:16px 0;align-items:flex-start}
+.step .n{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--ink);
+  border:1.5px solid var(--ink);
+  display:flex;align-items:center;justify-content:center;font-size:var(--fs-b);font-weight:700;flex:none;margin-top:1px}
+.step p{margin:4px 0;font-size:var(--fs-b)}
+.step b{font-weight:700}
+/* result rows reveal in a stagger (peak moment: the answer appears) */
+.reveal{animation:rowin .32s cubic-bezier(.2,.8,.3,1) both}
+@keyframes rowin{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+/* favorite star pop */
+.fav-pop{animation:favpop .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes favpop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+.fab{position:fixed;right:16px;bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom,0px));
+  width:56px;height:56px;border-radius:50%;border:none;background:var(--red);color:var(--on-red);
+  box-shadow:var(--sh-2);z-index:35;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.fab svg{width:24px;height:24px;fill:currentColor}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<svg style="display:none" aria-hidden="true"><defs>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="m12 17.27 6.18 3.73-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></symbol>
+<symbol id="i-star-o" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" d="m12 16.5 4.6 2.8-1.2-5.2 4-3.5-5.3-.5L12 5.4 9.9 10.1l-5.3.5 4 3.5-1.2 5.2z"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></symbol>
+<symbol id="i-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 8 8h-2a6 6 0 1 1-1.76-4.24L13 11h7V4l-2.35 2.35z"/></symbol>
+<symbol id="i-bus" viewBox="0 0 24 24"><path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/></symbol>
+<symbol id="i-map" viewBox="0 0 24 24"><path d="m20.5 3-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></symbol>
+<symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 0 1 0-5 2.5 2.5 0 0 1 0 5z"/></symbol>
+<symbol id="i-locate" viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.94 3A9 9 0 0 0 13 3.06V1h-2v2.06A9 9 0 0 0 3.06 11H1v2h2.06A9 9 0 0 0 11 20.94V23h2v-2.06A9 9 0 0 0 20.94 13H23v-2h-2.06zM12 19a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"/></symbol>
+<symbol id="i-warn" viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></symbol>
+<symbol id="i-error" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></symbol>
+<symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46A5.497 5.497 0 0 1 17.5 10.5v.5H19a3.5 3.5 0 0 1 2.44 6l1.43 1.43A5.5 5.5 0 0 0 19.35 10.04zM3 5.27l2.77 2.77h-.42A5.994 5.994 0 0 0 2 14c0 3.31 2.69 6 6 6h11.73l2 2L23 20.73 4.27 2 3 5.27z"/></symbol>
+<symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+<symbol id="i-swap" viewBox="0 0 24 24"><path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3 5 6.99h3V14h2V6.99h3L9 3z"/></symbol>
+<symbol id="i-flag" viewBox="0 0 24 24"><path d="M14.4 6 14 4H5v17h2v-7h5.6l.4 2h7V6z"/></symbol>
+<symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.987 7.987 0 0 1 5.08 16zm2.95-8H5.08a7.987 7.987 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><path d="M18 8h-1V6a5 5 0 0 0-10 0v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></symbol>
+<symbol id="i-addhome" viewBox="0 0 24 24"><path d="M18 1.01 8 1c-1.1 0-2 .9-2 2v3h2V5h10v14H8v-1H6v3c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM11 15h2v-3h3v-2h-3V7h-2v3H8v2h3v3z"/></symbol>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+<symbol id="i-stop" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></symbol>
+<symbol id="i-more" viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+<symbol id="i-share" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></symbol>
+<symbol id="i-route" viewBox="0 0 24 24"><path d="M4 18c0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3c-.35 0-.69.06-1 .17V8.83c.31.11.65.17 1 .17 1.31 0 2.42-.84 2.83-2H14v2l4-3-4-3v2h-4.17C9.42 4.84 8.31 4 7 4 5.34 4 4 5.34 4 7s1.34 3 3 3c.35 0 .69-.06 1-.17v9.34c-.31-.11-.65-.17-1-.17-1.66 0-3 1.34-3 3z"/></symbol>
+<symbol id="i-save" viewBox="0 0 24 24"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></symbol>
+<symbol id="lm-beach" viewBox="0 0 24 24"><path d="M12 3c-.35 0-.66.3-.66.67v1.4C7.6 5.44 4.7 8.2 4.2 11.8c-.06.5.34.95.85.95h6.28v6.1l-2.98 2a.92.92 0 0 0 1.03 1.53l3.62-2.42V12.75h6.95c.5 0 .9-.44.84-.95-.5-3.6-3.4-6.36-7.14-6.73v-1.4c0-.37-.3-.67-.67-.67z"/></symbol>
+<symbol id="lm-landmark" viewBox="0 0 24 24"><path d="M12 2c-.3 0-.55.2-.62.48L10.5 6.1c-.06.26.03.53.23.7l.35.32-.72 8.13H7.2c-.44 0-.8.36-.8.8V18H5.3c-.44 0-.8.36-.8.8v2.4c0 .44.36.8.8.8h13.4c.44 0 .8-.36.8-.8v-2.4c0-.44-.36-.8-.8-.8h-1.1v-1.95c0-.44-.36-.8-.8-.8h-3.16l-.72-8.13.35-.32c.2-.17.29-.44.23-.7l-.88-3.62A.63.63 0 0 0 12 2z"/></symbol>
+<symbol id="lm-shopping" viewBox="0 0 24 24"><path d="M18 6h-2A4 4 0 0 0 8 6H6l-1.1 13.1c-.05.5.35.9.85.9h12.5c.5 0 .9-.4.85-.9L18 6zm-6-2a2 2 0 0 1 2 2h-4a2 2 0 0 1 2-2zM8.5 10a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm7 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></symbol>
+<symbol id="lm-statue" viewBox="0 0 24 24"><path d="M12 2.6a2.4 2.4 0 1 1 0 4.8 2.4 2.4 0 0 1 0-4.8zM10.6 8.6h2.8c.5 0 .9.36.97.85l.83 5.55c.07.5-.28.95-.78 1.03l-.02.0.3 2.37H8.3l.3-2.37c-.5-.08-.85-.53-.78-1.03l.83-5.55c.07-.49.47-.85.95-.85zM7.6 19.4h8.8c.44 0 .8.36.8.8v.9c0 .44-.36.8-.8.8H7.6a.8.8 0 0 1-.8-.8v-.9c0-.44.36-.8.8-.8z"/></symbol>
+<symbol id="lm-palace" viewBox="0 0 24 24"><path d="M12 2.2c-.2 0-.4.1-.5.3l-.9 1.7c-.15.3-.1.66.13.9l.52.55-.1.85H8.9c-.4 0-.7.3-.7.7v.1c0 .4.3.7.7.7h6.2c.4 0 .7-.3.7-.7v-.1c0-.4-.3-.7-.7-.7h-2.25l-.1-.85.52-.55c.23-.24.28-.6.13-.9l-.9-1.7c-.1-.2-.3-.3-.5-.3zM5.6 10.5c0-.44.36-.8.8-.8h11.2c.44 0 .8.36.8.8v.2c0 .44-.36.8-.8.8h-.35v6.3h1.15c.44 0 .8.36.8.8v.9c0 .44-.36.8-.8.8H5.6a.8.8 0 0 1-.8-.8v-.9c0-.44.36-.8.8-.8h1.15v-6.3H6.4a.8.8 0 0 1-.8-.8v-.2zM9 17.8h1.4v-6.3H9v6.3zm3.3 0h1.4v-6.3h-1.4v6.3z"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M12 3 3 10.5h2.2V21h5.3v-6h3v6h5.3V10.5H21z"/></symbol>
+</defs></svg>
+
+<div id="app">
+  <header class="appbar" id="appbar"></header>
+  <main id="view" class="view" tabindex="-1"></main>
+  <button class="fab hidden" id="fab" type="button"></button>
+</div>
+<nav class="navbar" id="navbar" aria-label="Main"></nav>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheettitle"></div>
+<div class="snack" id="snack" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Dili Microlet PWA — core (i18n, storage, pack management, router, UI kit)
+   No runtime AI or third-party scripts. Logic is local; online map tiles load from OpenStreetMap.
+   ===================================================================== */
+const CFG = {
+  APP_VERSION: '1.5.0',
+  PACK_ID: 'dili-mobility',
+  PACK_SHA: 'cd044eccb111c0336ab2550f2a07e4392d9cb6fd27ac63427866063b068f0367',
+  PACK_VER: '1.1.0',
+  PACK_SIZE: 24752,
+  PACK_DATE: '2026-11-09'
+};
+
+const LANGS = ['en', 'tet', 'pt', 'id'];
+/* motion preferences — every animation in the app checks this */
+const REDUCED = (() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
+const LANG_LABEL = { en: 'English', tet: 'Tetun', pt: 'Português', id: 'Indonesia' };
+/* value: [en, tet, pt, id] — machine-drafted translations, pending human review */
+const I18N = {
+  app_name: ['Mikrolet', 'Mikrolet', 'Mikrolet', 'Mikrolet'],
+  tagline: ['Find your microlet. Works offline.', 'Hetan ita-nia mikrolet. Bele uza offline.', 'Encontre o seu microlet. Funciona offline.', 'Temukan mikrolet Anda. Bisa dipakai offline.'],
+  hero_title: ["Ba ne'ebé nonoi?", "Ba ne'ebé nonoi?", "Ba ne'ebé nonoi?", "Ba ne'ebé nonoi?"],
+  hero_sub: ['Your guide to getting around Dili by microlet', 'Ita-nia gia mikrolet iha Dili', 'O seu guia de microletes em Díli', 'Panduan mikrolet untuk Dili'],
+  featured_lm: ['Landmarks', 'Fatin sira', 'Pontos de referência', 'Tempat terkenal'],
+  all_routes_map: ['All {n} routes on the map', 'Rute {n} hotu iha mapa', 'Todas as {n} rotas no mapa', 'Semua {n} rute di peta'],
+  no_route_near: ['No route nearby', 'La iha rute besik', 'Nenhuma rota por perto', 'Tidak ada rute terdekat'],
+  no_favs: ['No favorites yet — tap ★ on any route.', 'Seidauk iha favoritu — klika ★ iha rute.', 'Ainda sem favoritas — toque em ★ numa rota.', 'Belum ada favorit — ketuk ★ pada rute.'],
+  a2hs_sub: ['For quick access', 'Atu asesu lalais', 'Para acesso rápido', 'Untuk akses cepat'],
+  pack_ready_short: ['Offline pack ready', 'Pake offline prontu', 'Pacote offline pronto', 'Paket offline siap'],
+  nav_routes: ['Routes', 'Rota sira', 'Rotas', 'Rute'],
+  nav_map: ['Map', 'Mapa', 'Mapa', 'Peta'],
+  nav_offline: ['Offline', 'Offline', 'Offline', 'Offline'],
+  nav_more: ['More', 'Seluk', 'Mais', 'Lainnya'],
+  online: ['Online', 'Online', 'Online', 'Online'],
+  offline: ['Offline', 'Offline', 'Offline', 'Offline'],
+  pack_missing_short: ['Pack not downloaded', 'Pake seidauk baxa', 'Pacote não baixado', 'Paket belum diunduh'],
+  pack_ok_short: ['Pack v{v} ready', 'Pake v{v} prontu', 'Pacote v{v} pronto', 'Paket v{v} siap'],
+  search_hint: ['Search a place or landmark', 'Buka fatin ka pontu importante', 'Procurar um lugar ou ponto de referência', 'Cari tempat atau landmark'],
+  which_title: ['Which route?', 'Rota nebee?', 'Qual rota?', 'Rute mana?'],
+  from: ['From', 'Husi', 'De', 'Dari'],
+  to: ['To', 'Ba', 'Para', 'Ke'],
+  find: ['Find my route', 'Hetan rota', 'Encontrar a minha rota', 'Temukan rute saya'],
+  no_direct: ['No direct route found. Try nearby areas.', 'La hetan rota direta. Koalia area besik liu.', 'Nenhuma rota direta. Tente zonas próximas.', 'Tidak ada rute langsung. Coba area terdekat.'],
+  matches: ['Matching routes', 'Rota nebee lili', 'Rotas correspondentes', 'Rute yang cocok'],
+  board: ['Board', 'Tama', 'Entrar', 'Naik'],
+  alight: ['Get off', 'Sae', 'Desça', 'Turun'],
+  n_stops: ['{n} stops between', '{n} parada iha klaran', '{n} paragens entre', '{n} pemberhentian di antara'],
+  all: ['All', 'Hotu', 'Todas', 'Semua'],
+  favorites: ['Favorites', 'Favoritu', 'Favoritas', 'Favorit'],
+  empty_routes_title: ['Download the pack to see routes', 'Baxa pake hodi haree rota sira', 'Baixe o pacote para ver as rotas', 'Unduh paket untuk melihat rute'],
+  empty_routes_body: ['Route and landmark data is delivered in the Dili mobility pack. It works offline after download.', 'Dadus rota no landmark iha iha pake Dili. Depois baxa, bele uza offline.', 'Os dados de rotas vêm no pacote de mobilidade. Funciona offline depois de baixar.', 'Data rute ada di paket mobilitas Dili. Bisa offline setelah diunduh.'],
+  go_offline_tab: ['Get the offline pack', 'Musa pake offline', 'Obter o pacote offline', 'Ambil paket offline'],
+  mast_kicker: ['Dili · Timor-Leste', 'Dili · Timor-Leste', 'Dili · Timor-Leste', 'Dili · Timor-Leste'],
+  mast_count: ['{n} routes mapped', '{n} rota rejistu', '{n} rotas mapeadas', '{n} rute terpetakan'],
+  fare: ['$0.25 flat', '$0.25 ras', '$0,25 fixo', '$0,25 flat'],
+  fare_l: ['Fare', 'Osan', 'Tarifa', 'Tarif'],
+  len_l: ['Length', 'Naruk', 'Comprimento', 'Panjang'],
+  km: ['{n} km route', 'Rota {n} km', 'Rota de {n} km', 'Rute {n} km'],
+  needs_review: ['Needs review', 'Presiza revizaun', 'Precisa de revisão', 'Perlu ditinjau'],
+  needs_review_desc: ['Route data is unverified. Check with a driver or local before relying on it.', 'Dadus rota sei la verifica on. Verifika ho motorista ka ema lokal.', 'Dados não verificados. Confirme com um motorista ou local.', 'Data belum terverifikasi. Cek dengan sopir atau warga lokal.'],
+  stops: ['Stops', 'Parada sira', 'Paragens', 'Perhentian'],
+  landmarks_on_route: ['Landmarks nearby', 'Ponte importante besik', 'Pontos de referência próximos', 'Landmark terdekat'],
+  view_on_map: ['View on map', 'Haree iha mapa', 'Ver no mapa', 'Lihat di peta'],
+  trip_to_here: ['Trip to here', 'Viajen ba iha ne', 'Viagem até aqui', 'Perjalanan ke sini'],
+  route_not_found: ['Route not found', 'Rota la hetan', 'Rota não encontrada', 'Rute tidak ditemukan'],
+  areas: ['Areas', 'Area sira', 'Zonas', 'Area'],
+  map_title: ['Route map', 'Mapa rute', 'Mapa de rotas', 'Peta rute'],
+  map_note: ['Route map for orientation — GPS trace lines and landmarks over an OpenStreetMap basemap. Tiles load online only; route data works offline. Not for precise navigation.', 'Mapa ba orientasaun — linha GPS no pontu importante iha basemap OpenStreetMap. Tile presiza internet, maibé dadus rute funciona offline. Labele uza ba navigasaun presiza.', 'Mapa de orientação — linhas de GPS e pontos sobre a cartografia OpenStreetMap. As telhas carregam apenas online; os dados de rotas funcionam offline. Não é navegação precisa.', 'Peta orientasi — lintasan GPS dan titik penting di atas peta dasar OpenStreetMap. Tile hanya dimuat saat online; data rute tetap berfungsi offline. Bukan navigasi presisi.'],
+  map_no_pack: ['Download the pack to see the map', 'Baxa pake hodi haree mapa', 'Baixe o pacote para ver o mapa', 'Unduh paket untuk melihat peta'],
+  locate_me: ['Show my location', 'Hatudu ita-nia fatin', 'Mostrar minha localização', 'Tampilkan lokasi saya'],
+  locating: ['Finding you…', 'Prokura ita…', 'Localizando…', 'Mencari lokasi…'],
+  location_denied: ['Location is off', 'Lokasaun mamuk', 'Localização desativada', 'Lokasi nonaktif'],
+  location_denied_desc: ['Allow location access in your browser settings, then tap the locate button again. Location is only used when you ask for it.', 'Loke lokasaun iha navegador, depois klik botão fali. Lokasaun uza deit wainhira ita husu.', 'Ative a localização nas configurações do navegador e toque novamente. Só usamos quando você pede.', 'Izinkan lokasi di pengaturan browser, lalu ketuk lagi. Lokasi hanya dipakai saat Anda minta.'],
+  landmark_served_by: ['Microlets serving this place', 'Mikrolet nebee pasa iha ne', 'Microlets que passam aqui', 'Mikrolet yang lewat di sini'],
+  no_routes_serve: ['No mapped route passes within 400 m.', 'La iha rota mapa pasa besik 400 m.', 'Nenhuma rota mapeada passa a menos de 400 m.', 'Tidak ada rute terpetakan dalam 400 m.'],
+  offline_title: ['Offline pack', 'Pake offline', 'Pacote offline', 'Paket offline'],
+  pack_card_title: ['Dili mobility pack', 'Pake mobiliidade Dili', 'Pacote de mobilidade de Dili', 'Paket mobilitas Dili'],
+  pack_card_desc: ['Routes, stops, landmarks and the schematic map, saved on this device.', 'Rota, parada, pontu importante no mapa, rai iha aparelhu ne.', 'Rotas, paragens, pontos e mapa, guardados neste aparelho.', 'Rute, perhentian, landmark, dan peta, tersimpan di perangkat ini.'],
+  download_pack: ['Download pack', 'Baxa pake', 'Baixar pacote', 'Unduh paket'],
+  update_pack: ['Update pack', 'Atualiza pake', 'Atualizar pacote', 'Perbarui paket'],
+  pack_offline_includes: ['Works offline once saved: route list, search, trip planner, schematic map and trip guidance.', 'Depois rai, bele uza offline: lista rota, buka, planu viajen, mapa no orientasaun viajen.', 'Funciona offline depois de guardar: lista de rotas, busca, planejador, mapa e orientação de viagem.', 'Setelah disimpan bisa offline: daftar rute, pencarian, perencana perjalanan, peta, dan panduan perjalanan.'],
+  saved_local_status: ['Saved on this device—not sent.', 'Rai iha aparelhu nee—la haruka.', 'Guardado neste aparelho—não enviado.', 'Tersimpan di perangkat ini—tidak dikirim.'],
+  downloading: ['Downloading…', 'Baxa hela…', 'Baixando…', 'Mengunduh…'],
+  download_failed: ['Download failed. Check your connection and try again.', 'Baxa la snaps. Verifika koneksaun no tenta fali.', 'Falhou. Verifique a conexão e tente de novo.', 'Gagal. Periksa koneksi dan coba lagi.'],
+  integrity_ok: ['Integrity verified (SHA-256)', 'Integridade verifica (SHA-256)', 'Integridade verificada (SHA-256)', 'Integritas terverifikasi (SHA-256)'],
+  integrity_fail: ['Integrity check failed — pack not saved.', 'Integridade la pasa — pake la rai.', 'Falha na verificação — pacote não guardado.', 'Integritas gagal — paket tidak disimpan.'],
+  pack_ready: ['Ready to use offline', 'Prontu atu uza offline', 'Pronto para uso offline', 'Siap dipakai offline'],
+  pack_version: ['Pack version', 'Versaun pake', 'Versão do pacote', 'Versi paket'],
+  pack_size: ['Size', 'Medida', 'Tamanho', 'Ukuran'],
+  downloaded_when: ['Downloaded', 'Baxa iha', 'Baixado em', 'Diunduh'],
+  data_age_days: ['{n} days old', 'Kalan {n} loron', 'Com {n} dias', 'Berumur {n} hari'],
+  data_today: ['Downloaded today', 'Baxa ohin', 'Baixado hoje', 'Diunduh hari ini'],
+  update_available: ['Update available: v{v}', 'Iha atualizasaun: v{v}', 'Atualização disponível: v{v}', 'Pembaruan tersedia: v{v}'],
+  check_update: ['Check for update', 'Verifika atualizasaun', 'Verificar atualização', 'Periksa pembaruan'],
+  up_to_date: ['You have the latest pack', 'Ita iha pake foun liu', 'Já tem a versão mais recente', 'Paket sudah versi terbaru'],
+  remove_pack: ['Remove pack', 'Hasai pake', 'Remover pacote', 'Hapus paket'],
+  remove_confirm: ['Remove the pack from this device? Routes will be unavailable offline.', 'Hasai pake husi aparelhu? Rota la bele haree offline.', 'Remover o pacote? As rotas ficam indisponíveis offline.', 'Hapus paket? Rute tidak bisa dilihat offline.'],
+  removed: ['Pack removed', 'Pake hasai tiha', 'Pacote removido', 'Paket dihapus'],
+  storage_used: ['Storage used by app', 'Espasu nebe uza', 'Armazenamento usado', 'Penyimpanan terpakai'],
+  storage_unavailable: ['Storage info unavailable on this browser', 'Navegador la fó informasaun espasu', 'Info de armazenamento indisponível', 'Info penyimpanan tidak tersedia'],
+  app_version: ['App version', 'Versaun aplikasaun', 'Versão da aplicação', 'Versi aplikasi'],
+  install_title: ['Add to Home Screen', 'Aumenta ba Uma-ekran', 'Adicionar ao ecrã principal', 'Tambahkan ke Layar utama'],
+  install_now: ['Show install steps', 'Hatudu oinsá instala', 'Mostrar passos de instalação', 'Tunjukkan cara install'],
+  step1: ['Open this site in Safari.', 'Loke site ne iha Safari.', 'Abra o site no Safari.', 'Buka situs ini di Safari (iPhone).'],
+  step2: ['Tap the Share button, then “Add to Home Screen”.', 'Klik botão Share, depois “Add to Home Screen”.', 'Toque em Partilhar, depois “Adicionar ao ecrã principal”.', 'Ketuk tombol Bagikan, lalu “Tambahkan ke Layar utama”.'],
+  step3: ['Launch it from your Home Screen like an app.', 'Loke husi Uma-ekran hanesan aplikasaun.', 'Abra pelo ecrã principal como uma app.', 'Buka dari Layar utama seperti aplikasi.'],
+  stepA1: ['Open this site in Chrome.', 'Loke site ne iha Chrome.', 'Abra o site no Chrome.', 'Buka situs ini di Chrome.'],
+  stepA2: ['Tap the ⋮ menu, then “Add to Home screen” → “Install”.', 'Klik menu ⋮, depois “Add to Home screen” → “Install”.', 'Toque no menu ⋮, depois “Adicionar ao ecrã principal” → “Instalar”.', 'Ketuk menu ⋮, lalu “Tambahkan ke Layar utama” → “Instal”.'],
+  offline_explain: ['This app works offline after two things happen: (1) you visit once while online — the app itself is saved by the browser; (2) you download the Dili pack here. The first visit always needs internet.', 'App ne works offline depois buat rua: (1) visita on dala ida — navegador rai app; (2) baxa pake Dili iha ne. Visita dahulu presi internet.', 'Funciona offline depois de: (1) visitar uma vez online — o navegador guarda a app; (2) baixar o pacote aqui. A primeira visita precisa de internet.', 'Bisa offline setelah: (1) kunjungan pertama saat online — browser menyimpan app; (2) unduh paket di sini. Kunjungan pertama butuh internet.'],
+  more_title: ['More', 'Seluk', 'Mais', 'Lainnya'],
+  language: ['Language', 'Lian', 'Idioma', 'Bahasa'],
+  lang_note: ['Translations are drafts and need review by native speakers.', 'Tradusaun sei la revizaun tiha. Presiza ema lokal revizaun.', 'Traduções são rascunhos e precisam de revisão.', 'Terjemahan masih draf dan perlu ditinjau.'],
+  report: ['Report', 'Relatóriu', 'Relatório', 'Laporan'],
+  report_desc: ['Note crowding or a vehicle sighting. Drafts stay on this device only.', 'Rekord lotajen ka mikrolet ne itu haree. Rai iha aparelhu deit.', 'Registre lotação ou um veículo visto. Fica só neste aparelho.', 'Catat kepadatan atau mikrolet yang terlihat. Hanya tersimpan di perangkat ini.'],
+  drafts: ['Drafts on this device', 'Rascunho iha aparelhu', 'Rascunhos neste aparelho', 'Draf di perangkat ini'],
+  no_drafts: ['No drafts yet', 'Seidauk iha rascunho', 'Ainda sem rascunhos', 'Belum ada draf'],
+  draft_badge: ['On this device — not submitted', 'Iha aparelhu deit — la submete', 'Neste aparelho — não enviado', 'Di perangkat ini — tidak dikirim'],
+  delete: ['Delete', 'Hamos', 'Apagar', 'Hapus'],
+  privacy_title: ['Privacy', 'Privasidade', 'Privacidade', 'Privasi'],
+  privacy_body: ['No account, tracking, or analytics. Your location is used only when you ask and is never stored or sent. Drafts stay on this device. When you view the online map, OpenStreetMap receives tile requests for the viewed area and your IP address.', 'Laiha konta, rastreiu ka analitika. Lokasaun uza deit bainhira ita husu, la rai ka haruka. Rascunhu hela iha aparelhu nee. Bainhira haree mapa online, OpenStreetMap simu pedidu ba area nebe ita haree no ita-nia IP.', 'Sem conta, rastreamento ou análise. Sua localização só é usada quando você pede e nunca é armazenada ou enviada. Os rascunhos ficam neste aparelho. Ao ver o mapa online, o OpenStreetMap recebe pedidos dos blocos da área exibida e seu endereço IP.', 'Tanpa akun, pelacakan, atau analitik. Lokasi hanya digunakan saat diminta dan tidak pernah disimpan atau dikirim. Draf tetap di perangkat ini. Saat melihat peta online, OpenStreetMap menerima permintaan ubin untuk area yang dilihat dan alamat IP Anda.'],
+  about_title: ['About', 'Kona-ba', 'Sobre', 'Tentang'],
+  not_emergency: ['This app is not an emergency service and cannot send messages for you.', 'App ne la serveísiu emerjénsia no la bele manda mensajem ba ita.', 'Esta app não é um serviço de emergência.', 'Aplikasi ini bukan layanan darurat.'],
+  erase_all: ['Erase all data', 'Hamos dadus hotu', 'Apagar todos os dados', 'Hapus semua data'],
+  erase_confirm: ['Erase the pack, favorites and drafts from this device?', 'Hamos pake, favoritu no rascunho husi aparelhu?', 'Apagar pacote, favoritas e rascunhos?', 'Hapus paket, favorit, dan draf?'],
+  erased: ['All local data erased', 'Dadus hotu hamos tiha', 'Dados apagados', 'Semua data dihapus'],
+  credits: ['Route geometry: Dili Microlet Routes project (ground-traced GPS). Corridors & fares: Timor-Leste tourism site. Place coordinates: © OpenStreetMap contributors.', 'Geometria: projetu Dili Microlet Routes (GPS). Korredor no osu: site turismu TL. Koordenada: © OpenStreetMap.', 'Geometria: projeto Dili Microlet Routes (GPS). Corredores e tarifas: site de turismo TL. Coordenadas: © OpenStreetMap.', 'Geometri: proyek Dili Microlet Routes (GPS). Koridor & tarif: situs pariwisata TL. Koordinat: © OpenStreetMap.'],
+  offline_banner: ['You are offline — showing saved data', 'Ita offline — hatudu dadus rai tiha', 'Está offline — a mostrar dados guardados', 'Anda offline — menampilkan data tersimpan'],
+  report_title: ['New report (draft)', 'Relatóriu foun (rascunho)', 'Novo relatório (rascunho)', 'Laporan baru (draf)'],
+  report_type: ['Type', 'Tipu', 'Tipo', 'Jenis'],
+  type_crowding: ['Crowding', 'Lotajen', 'Lotação', 'Kepadatan'],
+  type_sighting: ['Vehicle sighting', 'Haree mikrolet', 'Veículo visto', 'Mikrolet terlihat'],
+  type_other: ['Other', 'Seluk', 'Outro', 'Lainnya'],
+  report_note: ['Note', 'Nota', 'Nota', 'Catatan'],
+  report_note_hint: ['What did you see, where and when?', 'Saida mak itu haree, iha nee no ORAS?', 'O que viu, onde e quando?', 'Apa yang terlihat, di mana dan kapan?'],
+  save_draft: ['Save draft on device', 'Rai rascunho iha aparelhu', 'Guardar rascunho no aparelho', 'Simpan draf di perangkat'],
+  draft_saved: ['Draft saved on this device — not submitted', 'Rascunho rai iha aparelhu — la submete', 'Rascunho guardado — não enviado', 'Draf disimpan — tidak dikirim'],
+  route_optional: ['Route (optional)', 'Rota (fasilitade)', 'Rota (opcional)', 'Rute (opsional)'],
+  local_only_banner: ['Local draft only. This POC has no backend — nothing is sent anywhere.', 'Rascunho lokal deit. La iha backend — la manda buat ida.', 'Apenas rascunho local. Sem backend — nada é enviado.', 'Hanya draf lokal. Tanpa backend — tidak dikirim.'],
+  trip_title: ['Trip', 'Viajen', 'Viagem', 'Perjalanan'],
+  get_off_at: ['Get off at', 'Sae iha', 'Desça em', 'Turun di'],
+  trip_next: ['Next stop: {s}', 'Parada tuir mai: {s}', 'Próxima paragem: {s}', 'Pemberhentian berikutnya: {s}'],
+  trip_approaching: ['Get ready — {s} is next', 'Prepara an — {s} mak tuir mai', 'Prepare-se — {s} é a próxima', 'Bersiap — {s} berikutnya'],
+  trip_arrived: ['Arrived — get off here', 'Chega ona — sae iha ne', 'Chegou — desça aqui', 'Tiba — turun di sini'],
+  trip_away: ['{m} m to your stop', '{m} m ba ita-nia parada', '{m} m até à paragem', '{m} m ke perhentian'],
+  trip_fg_only: ['Foreground only: keep this screen open and the phone unlocked. Alerts stop if you close the app.', 'Deit iha ekrán ne: harii ekrán hela no taka lock. Para wainhira taka app.', 'Só em primeiro plano: mantenha o ecrã aberto. Para se fechar a app.', 'Hanya di layar depan: biarkan layar terbuka. Berhenti jika app ditutup.'],
+  trip_locating: ['Finding your location…', 'Prokura ita-nia fatin…', 'A localizar…', 'Mencari lokasi…'],
+  finish_trip: ['Finish trip', 'Remata viajen', 'Terminar viagem', 'Akhiri perjalanan'],
+  trip_no_pack: ['Download the pack first', 'Baxa pake dahuluk', 'Baixe o pacote primeiro', 'Unduh paket dulu'],
+  onboard_title: ['Welcome aboard', 'Bem-vindu', 'Bem-vindo', 'Selamat datang'],
+  onboard_body: ['Two quick steps and the app works without internet.', 'Pasu rua deit, depoi bele uza laiha internet.', 'Dois passos rápidos e a app funciona sem internet.', 'Dua langkah cepat, aplikasi bisa tanpa internet.'],
+  onboard_ok: ['Got it', 'Kompriende', 'Entendi', 'Mengerti'],
+  onboard_offline: ['Get the pack', 'Musa pake', 'Obter o pacote', 'Ambil paket'],
+  onboard_install: ['Install steps', 'Oinsá instala', 'Como instalar', 'Cara install'],
+  close: ['Close', 'Taka', 'Fechar', 'Tutup'],
+  retry: ['Try again', 'Tenta fali', 'Tentar de novo', 'Coba lagi'],
+  cancel: ['Cancel', 'Kansela', 'Cancelar', 'Batal'],
+  confirm: ['Confirm', 'Konfirma', 'Confirmar', 'Konfirmasi'],
+  loading: ['Loading…', 'Karga hela…', 'A carregar…', 'Memuat…'],
+  error_generic: ['Something went wrong.', 'Buat ruma falla.', 'Algo falhou.', 'Terjadi kesalahan.'],
+  data_banner_unverified: ['All route data is unverified and needs human review before official release.', 'Dadus rota hotu sei la revizaun — presiza revizaun antes publika.', 'Todos os dados estão por rever antes da publicação.', 'Semua data belum ditinjau sebelum rilis.'],
+  install_sheet_ios: ['iPhone — Safari', 'iPhone — Safari', 'iPhone — Safari', 'iPhone — Safari'],
+  install_sheet_android: ['Android — Chrome', 'Android — Chrome', 'Android — Chrome', 'Android — Chrome'],
+  show_android: ['Show Android', 'Hatudu Android', 'Mostrar Android', 'Tampilkan Android'],
+  show_ios: ['Show iPhone', 'Hatudu iPhone', 'Mostrar iPhone', 'Tampilkan iPhone'],
+  update_ready: ['App update ready — close and reopen', 'Iha atualizasaun — taka no loke fali', 'Atualização pronta — feche e reabra', 'Pembaruan siap — tutup dan buka lagi'],
+  checking: ['Checking…', 'Verifika hela…', 'A verificar…', 'Memeriksa…'],
+  no_pack_check: ['Connect to the internet to check for updates', 'Konekta internet atu verifika', 'Ligue-se à internet para verificar', 'Sambungkan internet untuk memeriksa'],
+  save_err: ['Could not save — storage problem', 'La salva — problema armazenamentu', 'Não guardou — problema de armazenamento', 'Gagal simpan — masalah penyimpanan'],
+  serve_est: ['Running roughly {a}–{b} (no timetable)', 'Aprosimadamente {a}–{b} (la iha oráriu)', 'Aprox. {a}–{b} (sem horário)', 'Kira-kira {a}–{b} (tanpa jadwal)'],
+  pack_incompat: ['The saved pack needs a newer app version. Reopen the app after the site updates, then re-download the pack.', 'Pake rai tiha presiza aplikasaun foun. Loke fali depois site atualiza, no baxa pake fali.', 'O pacote guardado precisa de uma app mais recente. Reabra após a atualização e baixe de novo.', 'Paket tersimpan butuh aplikasi lebih baru. Buka lagi setelah situs diperbarui, lalu unduh ulang.'],
+  pack_removed_stale: ['Saved pack could not be read — please download it again.', 'Pake rai la bele lee — baxa fali.', 'Pacote ilegível — baixe novamente.', 'Paket tidak terbaca — unduh lagi.'],
+  search_popular: ['Popular places', 'Fatin populár', 'Locais populares', 'Tempat populer'],
+  search_recent: ['Recent searches', 'Buka foin dabodu', 'Pesquisas recentes', 'Pencarian terakhir'],
+  clear: ['Clear', 'Hamos', 'Limpar', 'Hapus'],
+  matches_n: ['{n} matching routes', '{n} rota nebee lili', '{n} rotas correspondentes', '{n} rute yang cocok'],
+  best_match: ['Best match', 'Diak liu', 'Melhor correspondência', 'Paling cocok'],
+  try_these: ['Try one of these places', 'Tenta fatin hanesan nee', 'Experimente estes locais', 'Coba tempat ini'],
+  trip_arrived_sub: ['Nice work — safe travels!', 'Botao diak — viajen seguru!', 'Boa viagem!', 'Selamat jalan!']
+};
+
+let LANG = 'en';
+try { LANG = localStorage.getItem('dili.lang') || 'en'; if (!LANGS.includes(LANG)) LANG = 'en'; } catch (e) { /* private mode */ }
+function t(key, vars) {
+  const row = I18N[key];
+  let s = row ? (row[LANGS.indexOf(LANG)] || row[0]) : key;
+  if (vars) for (const k in vars) s = s.replaceAll('{' + k + '}', vars[k]);
+  return s;
+}
+function setLang(l) { LANG = l; try { localStorage.setItem('dili.lang', l); } catch (e) {} document.documentElement.lang = l; route(); }
+
+/* ---------- tiny DOM helpers ---------- */
+const $ = (s, r) => (r || document).querySelector(s);
+function el(tag, attrs, ...kids) {
+  const n = document.createElement(tag);
+  if (attrs) for (const k in attrs) {
+    if (k === 'html') n.innerHTML = attrs[k];
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), attrs[k]);
+    else if (attrs[k] !== null && attrs[k] !== undefined) n.setAttribute(k, attrs[k]);
+  }
+  for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : document.createTextNode(c));
+  return n;
+}
+function icon(name, cls) { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.innerHTML = `<use href="#${name}"/>`; if (cls) s.setAttribute('class', cls); return s; }
+function svgEl(tag, attrs, ...kids) { const n = document.createElementNS('http://www.w3.org/2000/svg', tag); if (attrs) for (const k in attrs) n.setAttribute(k, attrs[k]); for (const c of kids.flat()) if (c != null) n.append(c); return n; }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function fmtBytes(b) { if (b == null) return '—'; if (b < 1024) return b + ' B'; if (b < 1048576) return (b / 1024).toFixed(1) + ' KiB'; return (b / 1048576).toFixed(2) + ' MiB'; }
+function fmtWhen(iso) { const d = new Date(iso + (iso.length === 10 ? 'T00:00:00' : '')); return d.toLocaleDateString(document.documentElement.lang || 'en', { year: 'numeric', month: 'short', day: 'numeric' }); }
+function daysAgo(iso) { return Math.max(0, Math.floor((Date.now() - new Date(iso + (iso.length === 10 ? 'T00:00:00' : '')).getTime()) / 864e5)); }
+
+/* ---------- ripple (Material touch feedback) ---------- */
+document.addEventListener('pointerdown', e => {
+  const host = e.target.closest('.btn,.chip,.list-item,.icon-btn,.fab,.seg button,.navbar button,.stop .go .btn');
+  if (!host || host.disabled) return;
+  const r = host.getBoundingClientRect(), d = Math.max(r.width, r.height);
+  const ink = document.createElement('span');
+  ink.className = 'ripple-ink';
+  ink.style.cssText = `width:${d}px;height:${d}px;left:${e.clientX - r.left - d / 2}px;top:${e.clientY - r.top - d / 2}px`;
+  host.appendChild(ink);
+  setTimeout(() => ink.remove(), 500);
+}, { passive: true });
+
+/* ---------- snackbar ---------- */
+let snackTimer = 0;
+function snack(msg, ms) {
+  const s = $('#snack'); s.textContent = msg; s.classList.add('show');
+  clearTimeout(snackTimer); snackTimer = setTimeout(() => s.classList.remove('show'), ms || 3000);
+}
+
+/* ---------- bottom sheet ---------- */
+let lastFocus = null;
+function openSheet(content) {
+  const sh = $('#sheet'), sc = $('#scrim');
+  sh.innerHTML = ''; sh.append(el('div', { class: 'handle' }), content);
+  lastFocus = document.activeElement;
+  sc.classList.add('show'); sh.classList.add('show');
+  sc.onclick = closeSheet;
+  sh.setAttribute('tabindex', '-1'); sh.focus({ preventScroll: true });
+}
+function closeSheet() {
+  $('#scrim').classList.remove('show'); $('#sheet').classList.remove('show');
+  if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheet(); });
+
+/* ---------- IndexedDB ---------- */
+const DB = { name: 'dili-microlet', ver: 1 };
+let idbPromise = null, storageOk = true;
+function idb() {
+  if (idbPromise) return idbPromise;
+  idbPromise = new Promise((res, rej) => {
+    let rq;
+    try { rq = indexedDB.open(DB.name, DB.ver); } catch (e) { storageOk = false; rej(e); return; }
+    rq.onupgradeneeded = ev => {
+      const db = rq.result;
+      if (!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+      if (!db.objectStoreNames.contains('drafts')) db.createObjectStore('drafts', { keyPath: 'id' });
+    };
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = () => { storageOk = false; rej(rq.error); };
+  }).catch(e => { idbPromise = null; throw e; });
+  return idbPromise;
+}
+async function kvGet(key) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readonly').objectStore('kv').get(key);
+    tx.onsuccess = () => res(tx.result); tx.onerror = () => rej(tx.error);
+  });
+}
+async function kvSet(key, val) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readwrite').objectStore('kv').put(val, key);
+    tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error);
+  });
+}
+async function kvDel(key) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('kv', 'readwrite').objectStore('kv').delete(key);
+    tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error);
+  });
+}
+async function draftsAll() {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const rq = db.transaction('drafts', 'readonly').objectStore('drafts').getAll();
+    rq.onsuccess = () => res(rq.result || []); rq.onerror = () => rej(rq.error);
+  });
+}
+async function draftsAdd(d) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('drafts', 'readwrite').objectStore('drafts').put(d);
+    tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error);
+  });
+}
+async function draftsDel(id) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('drafts', 'readwrite').objectStore('drafts').delete(id);
+    tx.onsuccess = () => res(); tx.onerror = () => rej(tx.error);
+  });
+}
+
+/* ---------- favorites ---------- */
+async function getFavs() { try { return (await kvGet('favs')) || []; } catch (e) { return []; } }
+async function toggleFav(id) { const f = await getFavs(); const i = f.indexOf(id); if (i >= 0) f.splice(i, 1); else f.push(id); await kvSet('favs', f); return f.includes(id); }
+
+/* ---------- pack storage & download ---------- */
+let PACK = null;            // {pack, meta:{version, sha, sizeBytes, downloadedAt}}
+let PACK_INCOMPAT = false;  // pack schema newer than this app build
+function cmpVer(a, b) {
+  const pa = String(a).split('.').map(Number), pb = String(b).split('.').map(Number);
+  for (let i = 0; i < 3; i++) { const d = (pa[i] || 0) - (pb[i] || 0); if (d) return d < 0 ? -1 : 1; }
+  return 0;
+}
+async function loadPack() {
+  try {
+    PACK = await kvGet('pack') || null;
+    PACK_INCOMPAT = !!(PACK && PACK.pack && PACK.pack.pack &&
+      PACK.pack.pack.minAppVersion && cmpVer(PACK.pack.pack.minAppVersion, CFG.APP_VERSION) > 0);
+    if (PACK_INCOMPAT) PACK = null;   // do not render data the app cannot interpret
+  } catch (e) { PACK = null; storageOk = false; }
+}
+function sha256Hex(buf) {
+  if (!(window.crypto && crypto.subtle)) return null;
+  return crypto.subtle.digest('SHA-256', buf).then(h => [...new Uint8Array(h)].map(b => b.toString(16).padStart(2, '0')).join(''));
+}
+async function fetchWithProgress(url, onPct) {
+  const resp = await fetch(url, { cache: 'no-store' });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const len = +resp.headers.get('Content-Length') || 0;
+  if (!resp.body || !len) { const b = await resp.arrayBuffer(); onPct(100); return b; }
+  const reader = resp.body.getReader(); const chunks = []; let got = 0;
+  for (;;) { const { done, value } = await reader.read(); if (done) break; chunks.push(value); got += value.length; onPct(Math.min(99, Math.round(got / len * 100))); }
+  onPct(100);
+  const out = new Uint8Array(got); let o = 0; for (const c of chunks) { out.set(c, o); o += c.length; }
+  return out.buffer;
+}
+function validPack(p) {
+  return p && p.schemaVersion === 1 && Array.isArray(p.routes) && p.routes.length > 0 &&
+    p.pack && p.pack.id === CFG.PACK_ID && Array.isArray(p.landmarks);
+}
+async function downloadPack(onState) {
+  onState({ phase: 'fetch', pct: 0 });
+  const raw = await fetchWithProgress('data/mobility-pack-v1.json', p => onState({ phase: 'fetch', pct: p }));
+  onState({ phase: 'verify', pct: 100 });
+  const hex = await sha256Hex(raw);
+  const manifest = await fetch('data/pack-manifest.json', { cache: 'no-store' }).then(r => r.json()).catch(() => null);
+  const expected = (manifest && manifest.sha256) || CFG.PACK_SHA;
+  if (hex && expected && hex !== expected) { onState({ phase: 'fail', reason: 'integrity' }); return false; }
+  const decoded = new TextDecoder().decode(raw);
+  let parsed; try { parsed = JSON.parse(decoded); } catch (e) { onState({ phase: 'fail', reason: 'parse' }); return false; }
+  if (!validPack(parsed)) { onState({ phase: 'fail', reason: 'schema' }); return false; }
+  const meta = {
+    version: (manifest && manifest.latestVersion) || parsed.pack.version || CFG.PACK_VER,
+    sha: hex, sizeBytes: raw.byteLength,
+    downloadedAt: new Date().toISOString(),
+    integrity: hex ? 'verified' : 'unchecked'
+  };
+  PACK = { pack: parsed, meta };
+  try {
+    await kvSet('pack', PACK);
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch (e) { onState({ phase: 'fail', reason: 'storage' }); return false; }
+  onState({ phase: 'done' });
+  return true;
+}
+async function removePack() { PACK = null; await kvDel('pack'); }
+async function checkUpdate() {
+  if (!navigator.onLine) return { status: 'offline' };
+  try {
+    const m = await fetch('data/pack-manifest.json', { cache: 'no-store' }).then(r => r.json());
+    if (!PACK) return { status: 'none' };
+    if (m.latestVersion !== PACK.meta.version || (m.sha256 && PACK.meta.sha && m.sha256 !== PACK.meta.sha))
+      return { status: 'update', version: m.latestVersion };
+    return { status: 'latest' };
+  } catch (e) { return { status: 'error' }; }
+}
+async function storageEstimate() {
+  try {
+    if (!navigator.storage || !navigator.storage.estimate) return null;
+    const e = await navigator.storage.estimate();
+    return { usage: e.usage, quota: e.quota };
+  } catch (err) { return null; }
+}
+
+/* ---------- connectivity ---------- */
+function isOnline() { return navigator.onLine; }
+window.addEventListener('online', () => { renderStatusChips(); snack(t('online')); });
+window.addEventListener('offline', () => { renderStatusChips(); snack(t('offline_banner')); });
+
+/* ---------- navigation bar & status chips ---------- */
+const TABS = [
+  { id: 'routes', ic: 'i-route', k: 'nav_routes', hash: '#/routes' },
+  { id: 'map', ic: 'i-map', k: 'nav_map', hash: '#/map' },
+  { id: 'offline', ic: 'i-cloudoff', k: 'nav_offline', hash: '#/offline' },
+  { id: 'more', ic: 'i-more', k: 'nav_more', hash: '#/more' }
+];
+function renderNav(active) {
+  const nav = $('#navbar'); nav.innerHTML = '';
+  for (const tb of TABS) {
+    const b = el('button', { type: 'button', 'aria-current': tb.id === active ? 'page' : null,
+      onclick: () => { if (location.hash !== tb.hash) location.hash = tb.hash; else route(); } },
+      el('span', { class: 'pill' }, icon(tb.ic)), el('span', {}, t(tb.k)));
+    nav.append(b);
+  }
+}
+function renderStatusChips() {
+  const row = $('#statusrow'); if (!row) return;
+  row.innerHTML = '';
+  const net = el('span', { class: 'stat ' + (isOnline() ? 'net-on' : 'net-off') },
+    el('span', { class: 'dot', style: 'background:currentColor;border-radius:50%;width:8px;height:8px' }), isOnline() ? t('online') : t('offline'));
+  row.append(net);
+  if (PACK) row.append(el('span', { class: 'stat pack-ok' }, t('pack_ok_short', { v: PACK.meta.version })));
+  else row.append(el('span', { class: 'stat pack-no' }, t('pack_missing_short')));
+}
+function setAppbar(title, opts) {
+  opts = opts || {};
+  const bar = $('#appbar'); bar.innerHTML = '';
+  if (opts.back) bar.append(el('button', { class: 'icon-btn', 'aria-label': 'Back', onclick: () => history.back() }, icon('i-back')));
+  else bar.append(el('span', { class: 'spacer' }));
+  bar.append(el('div', { class: 'title' }, title));
+  if (opts.right) bar.append(opts.right);
+  else bar.append(el('span', { class: 'spacer' }));
+}
+/* pack status chip shown in the app bar (mock: "Offline pack ready") */
+function packChip() {
+  if (PACK) return el('button', { class: 'pstat', 'aria-label': t('pack_ready_short'), onclick: () => { location.hash = '#/offline'; } }, icon('i-check'), el('span', {}, t('pack_ready_short')));
+  return el('button', { class: 'pstat no', 'aria-label': t('pack_missing_short'), onclick: () => { location.hash = '#/offline'; } }, el('span', {}, t('pack_missing_short')));
+}
+
+/* ---------- service worker ---------- */
+async function initSW() {
+  if (!('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('sw.js', { scope: './' });
+    let lastUpd = 0;
+    const tryUpdate = () => { const now = Date.now(); if (now - lastUpd > 60000) { lastUpd = now; reg.update().catch(() => {}); } };
+    tryUpdate();
+    window.addEventListener('online', tryUpdate);
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      if (nw) nw.addEventListener('statechange', () => {
+        if (nw.state === 'installed' && navigator.serviceWorker.controller) snack(t('update_ready'), 5000);
+      });
+    });
+  } catch (e) { console.warn('SW registration failed:', e); }
+}
+
+/* ---------- device detection ---------- */
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+/* ---------- router ---------- */
+const TRIP = { watchId: null, stop: null };   // live trip state (cleaned up on navigation)
+function stopTripWatch() {
+  if (TRIP.watchId != null && navigator.geolocation) navigator.geolocation.clearWatch(TRIP.watchId);
+  TRIP.watchId = null; TRIP.stop = null;
+}
+function parseHash() {
+  const h = location.hash.replace(/^#\/?/, '');
+  const parts = h.split('/').filter(Boolean);
+  return { view: parts[0] || 'routes', a: parts[1], b: parts[2] };
+}
+function route() {
+  const { view, a, b } = parseHash();
+  stopTripWatch();
+  closeSheet();
+  const v = $('#view'); v.innerHTML = ''; v.scrollTop = 0; window.scrollTo(0, 0);
+  $('#fab').classList.add('hidden');
+  const views = { routes: viewRoutes, route: viewRouteDetail, map: viewMap, offline: viewOffline, more: viewMore, report: viewReport, trip: viewTrip };
+  const fn = views[view] || viewRoutes;
+  try { fn({ a, b }); } catch (e) {
+    console.error(e);
+    v.append(el('div', { class: 'banner err' }, icon('i-error'), el('div', {}, t('error_generic'))));
+  }
+  renderNav(TABS.some(x => x.id === view) ? view : '');
+  renderStatusChips();
+  if (!PACK && (view === 'routes' || view === 'map')) maybeOnboard();
+}
+window.addEventListener('hashchange', route);
+
+'use strict';
+/* =====================================================================
+   Dili Microlet PWA — views (routes, route detail, offline, more, report, trip)
+   ===================================================================== */
+
+/* ---------- shared UI bits ---------- */
+function banner(kind, ic, text) { return el('div', { class: 'banner ' + kind, role: kind === 'err' ? 'alert' : 'status' }, icon(ic), el('div', {}, text)); }
+/* rich empty state — guidance + CTA, never a dead end (skill: empty states
+   are opportunities) */
+function emptyState(ic, title, body, cta) {
+  const box = el('div', { class: 'empty2' }, el('span', { class: 'ring' }, icon(ic)));
+  if (title) box.append(el('div', { class: 't1' }, title));
+  box.append(el('div', { class: 't2' }, body));
+  if (cta) box.append(cta);
+  return box;
+}
+const LM_ICON = { beach: 'lm-beach', landmark: 'lm-landmark', shopping: 'lm-shopping', transport: 'i-bus' };
+function favBtn(id, onSync) {
+  const b = el('button', { class: 'icon-btn', 'aria-label': t('favorites'), style: 'width:40px;height:40px' });
+  const sync = fav => { b.innerHTML = ''; b.append(icon(fav ? 'i-star' : 'i-star-o')); if (onSync) onSync(fav); };
+  b.onclick = async ev => { ev.stopPropagation(); const fav = await toggleFav(id); sync(fav); b.classList.remove('fav-pop'); void b.offsetWidth; b.classList.add('fav-pop'); };
+  getFavs().then(f => sync(f.includes(id)));
+  return b;
+}
+function needsChip() { return el('span', { class: 'chip static needs' }, icon('i-warn'), t('needs_review')); }
+
+/* =====================================================================
+   ROUTES (home) — quiet field-guide layout:
+   the task first (search + planner + one key action) → six landmarks
+   in two columns → quiet link to the full map → install hint
+   ===================================================================== */
+let routeQuery = '';
+const TYPE_LABEL = { crowding: 'type_crowding', sighting: 'type_sighting', other: 'type_other' };
+function destIcon(l) {
+  const byId = { poi_gov_palace: 'lm-palace', poi_cristo_rei: 'lm-statue' };
+  return byId[l.id] || LM_ICON[l.kind] || 'i-pin';
+}
+function shortName(n) { return n.replace(/\s*\(.*?\)/g, '').replace(' Statue', '').trim(); }
+/* landmarks the routes actually serve — the familiar three first, then
+   Areia Branca, Motael Church and Dili Cathedral (pack v1.1.0; the new
+   coordinates come from Wikipedia). Exactly six fill the lower section. */
+const LM_ORDER = ['poi_gov_palace', 'poi_cristo_rei', 'poi_timor_plaza', 'poi_areia_branca', 'poi_motael', 'poi_cathedral', 'poi_airport'];
+function pickLandmarks() {
+  const byId = Object.fromEntries(PACK.pack.landmarks.map(l => [l.id, l]));
+  return LM_ORDER.map(id => byId[id]).filter(l => l && l.routes.length).slice(0, 6);
+}
+function lmChips(l) {
+  if (!l.routes.length) return el('span', { class: 't2', style: 'margin-top:3px' }, t('no_route_near'));
+  const chips = el('span', { class: 'numchips' });
+  for (const rid of l.routes.slice(0, 4)) {
+    const r = PACK.pack.routes.find(x => x.id === rid);
+    if (r) chips.append(el('span', { class: 'numchip' }, String(r.number)));
+  }
+  return chips;
+}
+function lmRow(l) {
+  return el('button', { class: 'list-item dest', onclick: () => location.hash = '#/map/focus/lm:' + l.id },
+    el('span', { class: 'lead' }, icon(destIcon(l))),
+    el('span', { class: 'txt' },
+      el('span', { class: 't1' }, shortName(l.name)),
+      lmChips(l)),
+    icon('i-right'));
+}
+/* small dismissible Home Screen hint — hidden in standalone mode */
+function appendA2hs(v) {
+  let standalone = false;
+  try { standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { }
+  let off = false; try { off = localStorage.getItem('dili.a2hs') === '1'; } catch (e) { }
+  if (standalone || off) return;
+  const box = el('div', { class: 'a2hs' },
+    icon('i-addhome', 'ic'),
+    el('div', { style: 'min-width:0' },
+      el('div', { class: 't1' }, t('install_title')),
+      el('div', { class: 't2' }, t('a2hs_sub'))),
+    el('button', { class: 'icon-btn x', 'aria-label': t('close'), onclick: () => { try { localStorage.setItem('dili.a2hs', '1'); } catch (e) { } box.remove(); } }, icon('i-close')));
+  v.append(box);
+}
+/* quiet pack status line — visible but calm */
+function packLine() {
+  const p = el('div', { class: 'packline' });
+  if (PACK) {
+    const age = daysAgo(PACK.meta.downloadedAt.slice(0, 10));
+    p.append(icon('i-check'),
+      el('span', {}, t('pack_ok_short', { v: PACK.meta.version }) + ' · ' +
+        (age ? fmtWhen(PACK.meta.downloadedAt.slice(0, 10)) : t('data_today'))));
+  } else {
+    p.append(icon('i-download'),
+      el('span', {}, t('pack_missing_short') + ' — '),
+      el('button', { onclick: () => location.hash = '#/offline' }, t('go_offline_tab')));
+  }
+  return p;
+}
+async function viewRoutes() {
+  setAppbar(t('app_name'), { right: packChip() });
+  const v = $('#view');
+
+  /* masthead — plain type, the task first */
+  v.append(el('div', { class: 'mast' },
+    el('p', { class: 'kicker' }, t('mast_kicker')),
+    el('h1', {}, t('hero_title')),
+    el('p', { class: 'hero-sub' }, t('hero_sub'))));
+  v.append(packLine());
+
+  if (!PACK) {
+    if (PACK_INCOMPAT) v.append(banner('err', 'i-warn', t('pack_incompat')));
+    v.append(emptyState('i-cloudoff', t('empty_routes_title'), t('empty_routes_body'),
+      el('div', { class: 'btn-row' },
+        el('button', { class: 'btn filled', onclick: () => location.hash = '#/offline' }, icon('i-download'), t('go_offline_tab')))));
+    appendA2hs(v);
+    return;
+  }
+  if (!isOnline()) v.append(banner('info', 'i-cloudoff', t('offline_banner')));
+  v.append(banner('warn', 'i-warn', t('data_banner_unverified')));
+
+  /* search — quiet field; matches routes and landmarks while typing.
+     Skill rule: never a blank search screen — recents + popular places
+     appear when the field is empty, and guidance with suggestions when
+     nothing matches. */
+  const searchRes = el('div', { id: 'searchres' });
+  const input = el('input', { type: 'search', 'aria-label': t('search_hint'), placeholder: t('search_hint'), value: routeQuery });
+  const clearBtn = el('button', { class: 'clear hidden', 'aria-label': t('clear'), onclick: () => { routeQuery = ''; input.value = ''; input.focus(); renderSearch(); } }, icon('i-close'));
+  input.addEventListener('input', () => { routeQuery = input.value; renderSearch(); });
+  input.addEventListener('focus', renderSearch);
+  v.append(el('div', { class: 'searchbar' }, icon('i-search'), input, clearBtn), searchRes);
+
+  function recentQueries() { try { return JSON.parse(localStorage.getItem('dili.recent') || '[]'); } catch (e) { return []; } }
+  function rememberQuery(q) {
+    try {
+      const r = [q, ...recentQueries().filter(x => x !== q)].slice(0, 4);
+      localStorage.setItem('dili.recent', JSON.stringify(r));
+    } catch (e) { /* private mode */ }
+  }
+  function popChips(centered) {
+    const row = el('div', { class: 'chiprow', style: centered ? 'justify-content:center' : '' });
+    for (const l of pickLandmarks().slice(0, 4))
+      row.append(el('button', { class: 'chip', onclick: () => { location.hash = '#/map/focus/lm:' + l.id; } }, shortName(l.name)));
+    return row;
+  }
+  function renderSearch() {
+    searchRes.innerHTML = '';
+    clearBtn.classList.toggle('hidden', !input.value);
+    const q = routeQuery.trim().toLowerCase();
+    if (!q) {
+      const recent = recentQueries();
+      if (recent.length) {
+        searchRes.append(el('h2', { class: 'sec' }, t('search_recent')));
+        const row = el('div', { class: 'chiprow' });
+        for (const rq of recent) row.append(el('button', { class: 'chip', onclick: () => { routeQuery = rq; input.value = rq; renderSearch(); } }, rq));
+        searchRes.append(row);
+      }
+      searchRes.append(el('h2', { class: 'sec' }, t('search_popular')));
+      searchRes.append(popChips(false));
+      return;
+    }
+    const rs = PACK.pack.routes.filter(r => (r.name + ' ' + r.areas.join(' ') + ' ' + r.stops.map(s => s.name).join(' ')).toLowerCase().includes(q))
+      .sort((x, y) => x.number - y.number).slice(0, 5);
+    const ls = PACK.pack.landmarks.filter(l => shortName(l.name).toLowerCase().includes(q)).slice(0, 5);
+    if (!rs.length && !ls.length) {
+      searchRes.append(emptyState('i-search', t('no_direct'), t('try_these')));
+      searchRes.append(popChips(true));
+      return;
+    }
+    if (rs.length) {
+      searchRes.append(el('h2', { class: 'sec' }, t('nav_routes')));
+      for (const r of rs) {
+        const row = routeCard(r);
+        row.addEventListener('click', () => rememberQuery(q), { once: true });
+        searchRes.append(row);
+      }
+    }
+    if (ls.length) {
+      searchRes.append(el('h2', { class: 'sec' }, t('featured_lm')));
+      for (const l of ls) {
+        const row = lmRow(l);
+        row.addEventListener('click', () => rememberQuery(q), { once: true });
+        searchRes.append(row);
+      }
+    }
+  }
+
+  /* which-route planner — fields up here, the one filled action docked
+     in the thumb zone (skill: primary actions live in the bottom third) */
+  const allStops = [...new Set(PACK.pack.routes.flatMap(r => r.stops.map(s => s.name)))].sort();
+  const mkSel = (lbl) => { const s = el('select', { 'aria-label': lbl }); s.append(el('option', { value: '' }, lbl)); allStops.forEach(n => s.append(el('option', { value: n }, n))); return s; };
+  const selFrom = mkSel(t('from')), selTo = mkSel(t('to'));
+  const results = el('div', { id: 'whichres' });
+  const findBtn = el('button', { class: 'btn filled cta', onclick: () => findRoutes(selFrom.value, selTo.value, results) },
+    icon('i-search'), t('find'));
+  const swapBtn = el('button', { class: 'icon-btn', 'aria-label': 'Swap', onclick: () => { const a = selFrom.value; selFrom.value = selTo.value; selTo.value = a; if (selFrom.value && selTo.value) findRoutes(selFrom.value, selTo.value, results); } }, icon('i-swap'));
+  v.append(el('div', { class: 'card' },
+    el('h3', { class: 'card-title' }, t('which_title')),
+    el('div', { style: 'display:flex;gap:12px;align-items:center' },
+      el('div', { class: 'field' }, el('label', {}, t('from')), selFrom), swapBtn,
+      el('div', { class: 'field' }, el('label', {}, t('to')), selTo)),
+    results));
+
+  /* landmarks — six major Dili places, two quiet columns, real pack data */
+  v.append(el('h2', { class: 'sec' }, t('featured_lm')));
+  const grid = el('div', { class: 'lm-grid' });
+  for (const l of pickLandmarks()) {
+    grid.append(el('button', { class: 'lm', onclick: () => location.hash = '#/map/focus/lm:' + l.id },
+      el('span', { class: 'lead' }, icon(destIcon(l))),
+      el('span', { class: 'txt' },
+        el('span', { class: 't1' }, shortName(l.name)),
+        lmChips(l))));
+  }
+  v.append(grid);
+  /* the full route list lives on the map — one quiet line, no long list here */
+  v.append(el('button', { class: 'quietlink', onclick: () => location.hash = '#/map' },
+    icon('i-map'), t('all_routes_map', { n: PACK.pack.routes.length })));
+  appendA2hs(v);
+  /* the CTA is the LAST element, sticky above the tab bar, so it rides in
+     the thumb zone the whole time the rider is on this screen */
+  v.append(el('div', { class: 'cta-dock' }, findBtn));
+}
+  function findRoutes(from, to, box) {
+    box.innerHTML = '';
+    if (!from || !to || from === to) return;
+    const out = [];
+    for (const r of PACK.pack.routes) {
+      const names = r.stops.map(s => s.name);
+      const i = names.indexOf(from), j = names.indexOf(to);
+      if (i < 0 || j < 0 || i === j) continue;
+      out.push({ r, fwd: j > i, between: Math.abs(j - i) - 1, board: names[i], alight: names[j] });
+    }
+    if (!out.length) { box.append(banner('info', 'i-info', t('no_direct'))); return; }
+    out.sort((x, y) => x.between - y.between);
+    /* peak moment: the answer reveals itself, best match highlighted */
+    box.append(el('h3', { class: 'card-title reveal', style: 'margin-top:16px' },
+      out.length === 1 ? t('matches') : t('matches_n', { n: out.length })));
+    out.forEach((o, i) => {
+      const trail = i === 0
+        ? el('span', { class: 'chip hilite static', style: 'flex:none' }, t('best_match'))
+        : icon('i-right');
+      if (i > 0) trail.classList.add('trail');
+      const li = el('button', { class: 'list-item reveal', style: 'animation-delay:' + (i * 60) + 'ms', onclick: () => location.hash = '#/route/' + o.r.id },
+        el('span', { class: 'lead sel', style: 'width:48px;height:48px' }, String(o.r.number)),
+        el('span', { class: 'txt' },
+          el('span', { class: 't1' }, o.r.name),
+          el('span', { class: 't2' }, `${t('board')}: ${o.board} · ${t('alight')}: ${o.alight} · ${t('n_stops', { n: o.between })}`)),
+        trail);
+      box.append(li);
+    });
+    /* bring the answer into view — the CTA lives at the bottom, the
+       result lands mid-screen */
+    const hdr = box.querySelector('.card-title');
+    if (hdr && hdr.scrollIntoView) { try { hdr.scrollIntoView({ behavior: REDUCED ? 'auto' : 'smooth', block: 'center' }); } catch (e) { } }
+  }
+function routeCard(r) {
+  const row = el('div', { class: 'rrow', role: 'link', tabindex: '0', onclick: () => location.hash = '#/route/' + r.id, onkeydown: e => { if (e.key === 'Enter') location.hash = '#/route/' + r.id; } },
+    el('span', { class: 'lead' }, String(r.number)),
+    el('span', { class: 'txt' },
+      el('span', { class: 't1' }, r.name),
+      el('span', { class: 't2' }, r.areas.join(' · ')),
+      el('span', { style: 'display:flex;gap:6px;margin-top:8px;flex-wrap:wrap' },
+        el('span', { class: 'chip static' }, t('fare')),
+        el('span', { class: 'chip static' }, t('km', { n: r.lengthKm })),
+        needsChip())),
+    favBtn(r.id, fav => row.classList.toggle('isfav', fav)));
+  return row;
+}
+
+/* =====================================================================
+   ROUTE DETAIL
+   ===================================================================== */
+async function viewRouteDetail({ a }) {
+  const r = PACK && PACK.pack.routes.find(x => x.id === a);
+  if (!r) { setAppbar(t('route_not_found'), { back: true }); $('#view').append(banner('err', 'i-error', t('route_not_found'))); return; }
+  setAppbar(r.name, { back: true });
+  const v = $('#view');
+  v.append(el('div', { class: 'hero' },
+    el('div', { class: 'head' },
+      el('span', { class: 'num' }, String(r.number)),
+      el('span', {}, el('div', { class: 'nm' }, r.name), el('div', { class: 'rt' }, r.areas.join(' · ')))),
+    el('div', { class: 'body' },
+      el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('fare_l')), el('b', {}, t('fare'))),
+      el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('len_l')), el('b', {}, r.lengthKm + ' km')),
+      el('p', { class: 'muted small', style: 'margin:6px 2px 0' }, t('serve_est', { a: '06:00', b: '19:00' })))));
+  v.append(banner('warn', 'i-warn', t('needs_review_desc')));
+  v.append(el('div', { class: 'btn-row' },
+    el('button', { class: 'btn tonal', onclick: () => location.hash = '#/map/focus/' + r.id }, icon('i-map'), t('view_on_map'))));
+
+  /* stops timeline — black rail, red destination knot */
+  v.append(el('h2', { class: 'sec' }, t('stops')));
+  const tl = el('div', { class: 'timeline' });
+  r.stops.forEach((s, i) => {
+    const isDest = i === r.stops.length - 1;
+    tl.append(el('div', { class: 'stop' },
+      el('div', { class: 'rail' }, el('div', { class: 'knot' + (isDest ? ' dest' : '') }), !isDest ? el('div', { class: 'line' }) : null),
+      el('div', { class: 'body' },
+        el('div', { class: 't1' }, s.name),
+        el('div', { class: 't2' }, `${i + 1} / ${r.stops.length}`),
+        el('div', { class: 'go' }, el('button', { class: 'btn txt', style: 'height:36px', onclick: () => location.hash = `#/trip/${r.id}/${i}` }, icon('i-play'), t('trip_to_here'))))));
+  });
+  v.append(tl);
+
+  /* landmarks along this route — line illustrations */
+  const lms = PACK.pack.landmarks.filter(l => l.routes.includes(r.id));
+  v.append(el('h2', { class: 'sec' }, t('landmarks_on_route')));
+  if (!lms.length) v.append(el('p', { class: 'muted small', style: 'margin:4px' }, t('no_routes_serve')));
+  for (const l of lms) {
+    v.append(el('button', { class: 'list-item', onclick: () => location.hash = '#/map/focus/lm:' + l.id },
+      el('span', { class: 'lead' }, icon(LM_ICON[l.kind] || 'i-pin')),
+      el('span', { class: 'txt' }, el('span', { class: 't1' }, l.name), el('span', { class: 't2' }, t('view_on_map'))),
+      icon('i-right')));
+  }
+}
+
+/* =====================================================================
+   OFFLINE (pack management)
+   ===================================================================== */
+let dlBusy = false, updAvail = null;
+async function viewOffline() {
+  setAppbar(t('offline_title'));
+  const v = $('#view');
+  v.append(el('div', { id: 'statusrow', class: 'statusrow' }));
+  v.append(banner('info', 'i-info', t('offline_explain')));
+
+  const card = el('div', { class: 'card' }); v.append(card);
+  paintPackCard();
+
+  /* install guide */
+  v.append(el('div', { class: 'card' },
+    el('h3', { class: 'card-title' }, t('install_title')),
+    el('p', { class: 'card-sub' }, isIOS() ? t('step1') : t('stepA1')),
+    el('div', { class: 'btn-row' }, el('button', { class: 'btn tonal', onclick: openInstallSheet }, icon('i-addhome'), t('install_now')))));
+
+  /* storage + versions */
+  const scard = el('div', { class: 'card' }, el('h3', { class: 'card-title' }, t('storage_used')));
+  v.append(scard);
+  const est = await storageEstimate();
+  if (est) scard.append(el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('storage_used')), el('b', {}, `${fmtBytes(est.usage)}${est.quota ? ' / ' + fmtBytes(est.quota) : ''}`)));
+  else scard.append(el('p', { class: 'card-sub' }, t('storage_unavailable')));
+  scard.append(el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('app_version')), el('b', {}, 'v' + CFG.APP_VERSION)));
+
+  function paintPackCard() {
+    card.innerHTML = '';
+    card.append(el('h3', { class: 'card-title' }, t('pack_card_title')),
+      el('p', { class: 'card-sub' }, t('pack_card_desc')));
+    const body = el('div', {}); card.append(body);
+    if (dlBusy) return;
+
+    if (!PACK) {
+      if (PACK_INCOMPAT) body.append(banner('err', 'i-warn', t('pack_incompat')));
+      const btn = el('button', { class: 'btn filled full', style: 'margin-top:12px', onclick: doDownload }, icon('i-download'), t('download_pack'));
+      body.append(btn, el('p', { class: 'muted small', style: 'margin:10px 2px 0' }, `${t('pack_version')}: v${CFG.PACK_VER} · ${fmtBytes(CFG.PACK_SIZE)}`));
+    } else {
+      const m = PACK.meta, age = daysAgo(m.downloadedAt.slice(0, 10));
+      body.append(
+        el('div', { class: 'banner ok', style: 'margin:10px 0' }, icon('i-check'), el('div', {}, t('pack_ready') + (m.integrity === 'verified' ? ' · ' + t('integrity_ok') : ''))),
+        el('p', { class: 'card-sub', style: 'margin:2px 2px 8px' }, t('pack_offline_includes')),
+        el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('pack_version')), el('b', {}, 'v' + m.version)),
+        el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('downloaded_when')), el('b', {}, fmtWhen(m.downloadedAt.slice(0, 10)) + (age ? ` · ${t('data_age_days', { n: age })}` : ` · ${t('data_today')}`))),
+        el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('pack_size')), el('b', {}, fmtBytes(m.sizeBytes))));
+      if (updAvail) {
+        body.append(banner('info', 'i-info', t('update_available', { v: updAvail })));
+        body.append(el('div', { class: 'btn-row', style: 'flex-direction:column;align-items:stretch' },
+          el('button', { class: 'btn filled full', onclick: () => doDownload() }, icon('i-refresh'), t('update_pack'))));
+      } else {
+        const upd = el('button', { class: 'btn tonal full', style: 'margin-top:10px', onclick: doCheck }, icon('i-refresh'), t('check_update'));
+        const rem = el('button', { class: 'btn errbtn full', style: 'margin-top:2px', onclick: doRemove }, icon('i-delete'), t('remove_pack'));
+        body.append(el('div', { class: 'btn-row', style: 'flex-direction:column;align-items:stretch' }, upd, rem));
+      }
+    }
+
+    async function doDownload() {
+      if (dlBusy) return; dlBusy = true;
+      const prog = el('div', {}, el('div', { class: 'prog' }, el('i')), el('p', { class: 'muted small center', style: 'margin:6px' }, t('downloading')));
+      card.innerHTML = ''; card.append(el('h3', { class: 'card-title' }, t('pack_card_title')), prog);
+      const bar = prog.querySelector('.prog>i'), lbl = prog.querySelector('p');
+      const ok = await downloadPack(st => {
+        if (st.phase === 'fetch') { bar.style.width = st.pct + '%'; lbl.textContent = `${t('downloading')} ${st.pct}% · ${fmtBytes(Math.round(CFG.PACK_SIZE * st.pct / 100))}`; }
+        else if (st.phase === 'verify') lbl.textContent = t('integrity_ok');
+        else if (st.phase === 'fail') lbl.textContent = t('integrity_fail');
+      }).catch(() => false);
+      dlBusy = false; updAvail = null;
+      if (!ok) { card.innerHTML = ''; card.append(el('h3', { class: 'card-title' }, t('pack_card_title')), banner('err', 'i-error', t('download_failed')), el('button', { class: 'btn filled', onclick: () => { paintPackCard(); } }, icon('i-refresh'), t('retry'))); renderStatusChips(); return; }
+      snack(t('pack_ready')); renderStatusChips(); route();
+    }
+    async function doCheck() {
+      if (!PACK) return;
+      const updBtn = card.querySelector('.btn.tonal'); if (updBtn) { updBtn.disabled = true; updBtn.textContent = t('checking'); }
+      const res = await checkUpdate();
+      if (updBtn) { updBtn.disabled = false; updBtn.innerHTML = ''; updBtn.append(icon('i-refresh'), t('check_update')); }
+      if (res.status === 'update') { updAvail = res.version; paintPackCard(); }
+      else if (res.status === 'latest') snack(t('up_to_date'));
+      else if (res.status === 'offline') snack(t('no_pack_check'));
+      else snack(t('download_failed'));
+    }
+    async function doRemove() {
+      openSheet(el('div', {},
+        el('h3', { id: 'sheettitle' }, t('remove_pack')),
+        el('p', { class: 'card-sub' }, t('remove_confirm')),
+        el('div', { class: 'btn-row' },
+          el('button', { class: 'btn errbtn', onclick: async () => { await removePack(); closeSheet(); snack(t('removed')); renderStatusChips(); route(); } }, t('remove_pack')),
+          el('button', { class: 'btn txt', onclick: closeSheet }, t('cancel')))));
+    }
+  }
+}
+
+/* =====================================================================
+   MORE
+   ===================================================================== */
+async function viewMore() {
+  setAppbar(t('more_title'));
+  const v = $('#view');
+
+  /* language */
+  const langCard = el('div', { class: 'card' }, el('h3', { class: 'card-title' }, t('language')), el('p', { class: 'card-sub' }, t('lang_note')));
+  const seg = el('div', { class: 'seg', role: 'radiogroup', 'aria-label': t('language') });
+  for (const l of LANGS) seg.append(el('button', { role: 'radio', 'aria-checked': LANG === l ? 'true' : 'false', 'aria-pressed': LANG === l ? 'true' : 'false', onclick: () => setLang(l) }, LANG_LABEL[l]));
+  langCard.append(seg); v.append(langCard);
+
+  /* report */
+  v.append(el('div', { class: 'card list-item', role: 'link', tabindex: '0', onclick: () => location.hash = '#/report', onkeydown: e => { if (e.key === 'Enter') location.hash = '#/report'; } },
+    el('span', { class: 'lead' }, icon('i-flag')),
+    el('span', { class: 'txt' }, el('span', { class: 't1' }, t('report')), el('span', { class: 't2' }, t('report_desc'))),
+    icon('i-right')));
+
+  /* drafts */
+  const dcard = el('div', { class: 'card' }, el('h3', { class: 'card-title' }, t('drafts')));
+  v.append(dcard);
+  paintDrafts();
+  async function paintDrafts() {
+    let ds = [];
+    try { ds = await draftsAll(); } catch (e) { }
+    dcard.querySelectorAll('.list-item,.banner,.empty').forEach(x => x.remove());
+    if (!ds.length) dcard.append(emptyState('i-flag', '', t('no_drafts')));
+    ds.sort((a, b) => b.ts - a.ts).forEach(d => {
+      dcard.append(el('div', { class: 'list-item static' },
+        el('span', { class: 'lead' }, icon('i-flag')),
+        el('span', { class: 'txt' },
+          el('span', { class: 't1' }, (d.routeName ? d.routeName + ' · ' : '') + t(TYPE_LABEL[d.type] || 'type_other')),
+          el('span', { class: 't2' }, (d.note || '').slice(0, 60)),
+          el('span', { class: 'chip static needs', style: 'margin-top:6px' }, t('draft_badge'))),
+        el('button', { class: 'icon-btn', 'aria-label': t('delete'), onclick: async () => { await draftsDel(d.id); paintDrafts(); snack(t('delete') + ' ✓'); } }, icon('i-delete'))));
+    });
+  }
+
+  /* install */
+  v.append(el('div', { class: 'card list-item', role: 'link', tabindex: '0', onclick: openInstallSheet, onkeydown: e => { if (e.key === 'Enter') openInstallSheet(); } },
+    el('span', { class: 'lead' }, icon('i-addhome')),
+    el('span', { class: 'txt' }, el('span', { class: 't1' }, t('install_title')), el('span', { class: 't2' }, isIOS() ? t('step2') : t('stepA2'))),
+    icon('i-right')));
+
+  /* privacy & about */
+  v.append(el('div', { class: 'card' }, el('h3', { class: 'card-title' }, t('privacy_title')), el('p', { class: 'card-sub' }, t('privacy_body'))));
+  v.append(banner('err', 'i-error', t('not_emergency')));
+  v.append(el('div', { class: 'card' },
+    el('h3', { class: 'card-title' }, t('about_title')),
+    el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('app_version')), el('b', {}, 'v' + CFG.APP_VERSION)),
+    el('div', { class: 'kv' }, el('span', { class: 'muted' }, t('pack_version')), el('b', {}, PACK ? 'v' + PACK.meta.version + (PACK.meta.integrity === 'verified' ? ' ✓' : '') : '—')),
+    el('p', { class: 'card-sub small', style: 'margin-top:10px' }, t('credits'))));
+
+  /* erase */
+  v.append(el('div', { class: 'btn-row', style: 'justify-content:center' },
+    el('button', { class: 'btn errbtn', onclick: () => openSheet(el('div', {},
+      el('h3', { id: 'sheettitle' }, t('erase_all')), el('p', { class: 'card-sub' }, t('erase_confirm')),
+      el('div', { class: 'btn-row' },
+        el('button', { class: 'btn errbtn', onclick: async () => {
+          try { await kvDel('pack'); await kvDel('favs'); const db = await idb(); db.transaction('drafts', 'readwrite').objectStore('drafts').clear(); } catch (e) { }
+          PACK = null; closeSheet(); snack(t('erased')); renderStatusChips(); route();
+        } }, t('confirm')),
+        el('button', { class: 'btn txt', onclick: closeSheet }, t('cancel'))))) }, icon('i-delete'), t('erase_all'))));
+}
+
+/* =====================================================================
+   REPORT (local-only drafts)
+   ===================================================================== */
+async function viewReport() {
+  setAppbar(t('report_title'), { back: true });
+  const v = $('#view');
+  v.append(banner('warn', 'i-warn', t('local_only_banner')));
+  const sel = el('select', { 'aria-label': t('route_optional') });
+  sel.append(el('option', { value: '' }, t('route_optional')));
+  if (PACK) PACK.pack.routes.forEach(r => sel.append(el('option', { value: r.id }, r.name)));
+  let type = 'crowding';
+  const seg = el('div', { class: 'seg' });
+  const typeDefs = [['crowding', 'type_crowding'], ['sighting', 'type_sighting'], ['other', 'type_other']];
+  typeDefs.forEach(([id, k]) => seg.append(el('button', { 'aria-pressed': type === id ? 'true' : 'false', onclick: () => { type = id; [...seg.children].forEach(b => b.setAttribute('aria-pressed', 'false')); seg.children[typeDefs.findIndex(x => x[0] === id)].setAttribute('aria-pressed', 'true'); } }, t(k))));
+  const ta = el('textarea', { maxlength: '600', placeholder: t('report_note_hint'), 'aria-label': t('report_note') });
+  v.append(el('div', { class: 'card' },
+    el('div', { class: 'field' }, el('label', {}, t('route_optional')), sel),
+    el('p', { class: 'small muted', style: 'margin:10px 4px 2px' }, t('report_type')), seg,
+    el('div', { class: 'field' }, el('label', {}, t('report_note')), ta),
+    el('div', { class: 'btn-row' }, el('button', { class: 'btn filled', onclick: save }, icon('i-save'), t('save_draft'))),
+    el('p', { class: 'muted small', style: 'margin:10px 2px 0' }, t('saved_local_status'))));
+  v.append(el('h2', { class: 'sec' }, t('drafts')));
+  const dlist = el('div', {}); v.append(dlist); paint();
+  async function save() {
+    const id = (crypto.randomUUID ? crypto.randomUUID() : 'd' + Date.now() + Math.random().toString(16).slice(2));
+    const r = PACK && PACK.pack.routes.find(x => x.id === sel.value);
+    const d = { id, ts: Date.now(), type, routeId: sel.value || null, routeName: r ? r.name : null, note: ta.value.trim() };
+    try { await draftsAdd(d); } catch (e) { snack(t('save_err')); return; }
+    ta.value = ''; snack(t('draft_saved'), 4200); paint();
+  }
+  async function paint() {
+    dlist.innerHTML = ''; let ds = [];
+    try { ds = await draftsAll(); } catch (e) { }
+    ds.sort((a, b) => b.ts - a.ts).forEach(d => dlist.append(el('div', { class: 'card list-item static' },
+      el('span', { class: 'lead' }, icon('i-flag')),
+      el('span', { class: 'txt' },
+        el('span', { class: 't1' }, (d.routeName ? d.routeName + ' · ' : '') + t(TYPE_LABEL[d.type] || 'type_other')),
+        el('span', { class: 't2' }, d.note || '—'),
+        el('span', { class: 'chip static needs', style: 'margin-top:6px' }, t('draft_badge'))),
+      el('button', { class: 'icon-btn', 'aria-label': t('delete'), onclick: async () => { await draftsDel(d.id); paint(); } }, icon('i-delete')))));
+    if (!ds.length) dlist.append(emptyState('i-flag', '', t('no_drafts')));
+  }
+}
+
+/* =====================================================================
+   TRIP (foreground alighting guidance)
+   ===================================================================== */
+async function viewTrip({ a, b }) {
+  setAppbar(t('trip_title'), { back: true });
+  const v = $('#view');
+  const r = PACK && PACK.pack.routes.find(x => x.id === a);
+  if (!r || !r.stops[+b]) { v.append(banner('err', 'i-error', t('trip_no_pack'))); return; }
+  const dest = r.stops[+b], destIdx = +b;
+
+  v.append(banner('warn', 'i-warn', t('trip_fg_only')));
+  v.append(el('div', { class: 'trip-dest' }, icon('i-pin'),
+    el('div', {}, el('div', { class: 'big' }, t('get_off_at') + ': ' + dest.name),
+      el('div', { class: 'sm' }, r.name + ' · ' + t('fare')))));
+  const stateBox = el('div', { class: 'card elev' }); v.append(stateBox);
+  const listBox = el('div', {}); v.append(listBox);
+
+  const stopFracs = r.stops.map(s => nearestFrac(r.shape, s));
+  function nearestFrac(shape, p) {
+    let bi = 0, bd = Infinity;
+    shape.forEach((q, i) => { const dx = q[0] - p.lon, dy = q[1] - p.lat, d = dx * dx + dy * dy; if (d < bd) { bd = d; bi = i; } });
+    return bi / (shape.length - 1);
+  }
+  function haversine(a1, o1, a2, o2) {
+    const R = 6371000, rad = x => x * Math.PI / 180;
+    const dA = rad(a2 - a1), dO = rad(o2 - o1);
+    const h = Math.sin(dA / 2) ** 2 + Math.cos(rad(a1)) * Math.cos(rad(a2)) * Math.sin(dO / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  if (!navigator.geolocation) { denied(); return; }
+  stateBox.append(el('div', { class: 'trip-state' }, t('trip_locating')));
+  /* journey progress — the red fill is the emphasized next segment */
+  const prog = el('div', { class: 'prog', style: 'margin:14px 2px 2px' }, el('i'));
+  const progLbl = el('p', { class: 'trip-dist', style: 'margin:2px 2px 10px' }, '');
+  const progBox = el('div', {}, prog, progLbl);
+  v.append(progBox);
+  progBox.classList.add('hidden');
+  TRIP.watchId = navigator.geolocation.watchPosition(onPos, onErr, { enableHighAccuracy: false, maximumAge: 15000, timeout: 25000 });
+
+  function onErr(err) {
+    if (TRIP.watchId == null) return;
+    navigator.geolocation.clearWatch(TRIP.watchId); TRIP.watchId = null;
+    if (err && err.code === 1) denied();
+    else { stateBox.innerHTML = ''; stateBox.append(el('div', { class: 'trip-state' }, t('locating')), el('p', { class: 'muted small center' }, t('error_generic'))); }
+  }
+  function denied() {
+    stateBox.innerHTML = '';
+    stateBox.append(banner('err', 'i-error', t('location_denied')),
+      el('p', { class: 'card-sub' }, t('location_denied_desc')),
+      el('div', { class: 'btn-row' }, el('button', { class: 'btn tonal', onclick: () => route() }, icon('i-locate'), t('retry'))));
+  }
+  function onPos(pos) {
+    if (TRIP.watchId == null) return;
+    const { longitude: lon, latitude: lat } = pos.coords;
+    /* project onto shape: nearest vertex fraction */
+    let bi = 0, bd = Infinity;
+    r.shape.forEach((q, i) => { const dx = q[0] - lon, dy = q[1] - lat, d = dx * dx + dy * dy; if (d < bd) { bd = d; bi = i; } });
+    const uf = bi / (r.shape.length - 1);
+    const dvi = Math.round(stopFracs[destIdx] * (r.shape.length - 1));   // dest vertex index
+    const dDest = haversine(lat, lon, dest.lat, dest.lon);
+    /* next stop ahead of user along the trace */
+    let nextIdx = r.stops.findIndex(s => stopFracs[r.stops.indexOf(s)] > uf + 0.004);
+    const nextName = nextIdx >= 0 ? r.stops[nextIdx].name : r.stops[r.stops.length - 1].name;
+    const atStop = dDest < 150 || Math.abs(bi - dvi) <= 1;               // reached the stop vertex
+    stateBox.innerHTML = '';
+    if (atStop) {
+      /* end moment: arrival gets closure — check pop, yellow card, a word
+         of encouragement (skill: never let the flow fall off) */
+      stateBox.append(el('div', { class: 'trip-state arrived' }, icon('i-check'), t('trip_arrived'),
+        el('span', { class: 'sub' }, t('trip_arrived_sub'))),
+        el('p', { class: 'trip-dist' }, t('trip_away', { m: Math.round(dDest) })));
+    } else if (nextName === dest.name) {
+      stateBox.append(el('div', { class: 'trip-state approach' }, t('trip_approaching', { s: dest.name })),
+        el('p', { class: 'trip-dist' }, t('trip_away', { m: Math.round(dDest) })));
+    } else {
+      stateBox.append(el('div', { class: 'trip-state' }, t('trip_next', { s: nextName })),
+        el('p', { class: 'trip-dist' }, t('trip_away', { m: Math.round(dDest) })));
+    }
+    /* gentle progress emphasis: fraction of the journey completed */
+    const destFrac = Math.max(stopFracs[destIdx], 0.0001);
+    progBox.classList.remove('hidden');
+    prog.firstElementChild.style.width = Math.min(100, Math.max(2, uf / destFrac * 100)) + '%';
+    progLbl.textContent = `${t('board')}: ${r.stops[0].name} → ${t('get_off_at')}: ${dest.name}`;
+    /* stop progress list — next stop red, destination flagged */
+    listBox.innerHTML = '';
+    const tl = el('div', { class: 'timeline' });
+    r.stops.forEach((s, i) => {
+      const here = s.name === nextName, isDest = i === destIdx;
+      tl.append(el('div', { class: 'stop' },
+        el('div', { class: 'rail' }, el('div', { class: 'knot' + (here ? ' next' : '') + (isDest ? ' dest' : '') }), i < r.stops.length - 1 ? el('div', { class: 'line' }) : null),
+        el('div', { class: 'body' }, el('div', { class: 't1', style: here || isDest ? 'font-weight:700' : '' }, s.name + (isDest ? '  ·  ' + t('get_off_at') : '')))));
+    });
+    listBox.append(tl);
+    if (!TRIP.finBtn) TRIP.finBtn = true;
+  }
+}
+
+/* =====================================================================
+   Onboarding + install sheet
+   ===================================================================== */
+async function maybeOnboard() {
+  let done = false;
+  try { done = !!(await kvGet('onboarded')); } catch (e) { done = true; }
+  if (done) return;
+  try { await kvSet('onboarded', true); } catch (e) { }
+  openSheet(el('div', {},
+    el('h3', { id: 'sheettitle' }, t('onboard_title')),
+    el('p', { class: 'card-sub' }, t('onboard_body')),
+    el('div', { class: 'step' }, el('span', { class: 'n' }, '1'), el('p', {}, el('b', {}, t('install_title') + ' — '), isIOS() ? t('step2') : t('stepA2'))),
+    el('div', { class: 'step' }, el('span', { class: 'n' }, '2'), el('p', {}, el('b', {}, t('onboard_offline') + ' — '), t('empty_routes_body'))),
+    el('div', { class: 'step' }, el('span', { class: 'n' }, '3'), el('p', {}, t('offline_explain'))),
+    el('div', { class: 'btn-row' },
+      el('button', { class: 'btn tonal', onclick: () => { closeSheet(); openInstallSheet(); } }, t('onboard_install')),
+      el('button', { class: 'btn filled', onclick: () => { closeSheet(); location.hash = '#/offline'; } }, icon('i-download'), t('onboard_offline')),
+      el('button', { class: 'btn txt', onclick: closeSheet }, t('onboard_ok')))));
+}
+function openInstallSheet() {
+  const mkSteps = (a, b, c) => el('div', {},
+    el('div', { class: 'step' }, el('span', { class: 'n' }, '1'), el('p', { html: a })),
+    el('div', { class: 'step' }, el('span', { class: 'n' }, '2'), el('p', { html: b })),
+    el('div', { class: 'step' }, el('span', { class: 'n' }, '3'), el('p', { html: c })));
+  const ios = mkSteps(t('step1'), t('step2'), t('step3'));
+  const and = mkSteps(t('stepA1'), t('stepA2'), t('step3'));
+  const tabs = el('div', { class: 'seg' });
+  const ib = el('button', { 'aria-pressed': 'false' }, t('show_ios'));
+  const ab = el('button', { 'aria-pressed': 'false' }, t('show_android'));
+  const holder = el('div', {});
+  const pick = which => {
+    holder.innerHTML = ''; holder.append(which === 'ios' ? ios : and);
+    ib.setAttribute('aria-pressed', which === 'ios' ? 'true' : 'false');
+    ab.setAttribute('aria-pressed', which === 'ios' ? 'false' : 'true');
+  };
+  ib.onclick = () => pick('ios'); ab.onclick = () => pick('android');
+  tabs.append(ib, ab);
+  openSheet(el('div', {},
+    el('h3', { id: 'sheettitle' }, t('install_title')),
+    tabs, holder,
+    el('p', { class: 'muted small', style: 'margin-top:10px' }, t('offline_explain')),
+    el('div', { class: 'btn-row', style: 'justify-content:flex-end' }, el('button', { class: 'btn filled', onclick: closeSheet }, t('close')))));
+  pick(isIOS() ? 'ios' : 'android');
+}
+
+'use strict';
+/* =====================================================================
+   Mikrolet PWA — SVG route map over an OSM raster basemap (grayscale
+   tiles; they load online only — offline the map falls back to the clean
+   line map). Flag palette: black route lines on white; the selected
+   route is flag-red on a black casing (distinct by color AND width) and
+   its number badge inverts.
+   Motion: route draw-in, location pulse, stop tap bump, eased fly-to —
+   all suppressed when prefers-reduced-motion is set (REDUCED in app.core.js).
+   ===================================================================== */
+const MAP = { k: 1, tx: 0, ty: 0, W: 0, H: 0, proj: null, pointers: new Map(), moved: false, focusId: null, sel: null, tweenId: 0 };
+const PAD = 44;
+
+function mapBbox(pack) {
+  let lo1 = 999, la1 = 999, lo2 = -999, la2 = -999;
+  for (const r of pack.routes) for (const p of r.shape) {
+    lo1 = Math.min(lo1, p[0]); lo2 = Math.max(lo2, p[0]);
+    la1 = Math.min(la1, p[1]); la2 = Math.max(la2, p[1]);
+  }
+  const m = 0.004; // margin in degrees
+  return { lo1: lo1 - m, la1: la1 - m, lo2: lo2 + m, la2: la2 + m };
+}
+function viewMap({ a, b }) {
+  setAppbar(t('map_title'));
+  const v = $('#view');
+  if (!PACK) {
+    v.append(banner('info', 'i-download', t('map_no_pack')),
+      el('div', { class: 'btn-row' }, el('button', { class: 'btn ink', onclick: () => location.hash = '#/offline' }, icon('i-download'), t('go_offline_tab'))));
+    return;
+  }
+  v.style.padding = '0';
+  const wrap = el('div', { class: 'mapwrap' });
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.id = 'mapsvg'; svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', t('map_note'));
+  wrap.append(svg);
+  /* route selection chips (single-select = the highlighted route) */
+  const chiprow = el('div', { class: 'chiprow', style: 'padding:8px 16px 2px' });
+  const chipBox = el('div', { style: 'padding:0 0 4px' });
+  chipBox.append(chiprow);
+  const note = el('div', { style: 'padding:6px 16px 10px' }, el('p', { class: 'muted small', style: 'margin:0' }, t('map_note')));
+  /* OSM tile attribution — required whenever basemap tiles are shown */
+  const attr = el('a', { class: 'map-attr', href: 'https://www.openstreetmap.org/copyright', target: '_blank', rel: 'noopener' }, '© OpenStreetMap contributors');
+  wrap.append(attr);
+  v.append(wrap, chipBox, note);
+
+  /* controls */
+  const ctl = el('div', { class: 'map-ctl' });
+  const locBtn = el('button', { class: 'icon-btn', 'aria-label': t('locate_me'), onclick: locateMe }, icon('i-locate'));
+  ctl.append(locBtn); wrap.append(ctl);
+  const marker = document.createElementNS('http://www.w3.org/2000/svg', 'g'); marker.setAttribute('id', 'meloc'); marker.style.display = 'none';
+
+  MAP.focusId = (a === 'focus' && b) ? b : null;
+  MAP.sel = null;
+  buildMap();
+
+  function buildMap() {
+    const bbox = mapBbox(PACK.pack);
+    MAP.W = wrap.clientWidth || 360; MAP.H = wrap.clientHeight || 480;
+    svg.setAttribute('viewBox', `0 0 ${MAP.W} ${MAP.H}`);
+    const sx = MAP.W / (bbox.lo2 - bbox.lo1), sy = MAP.H / (bbox.la2 - bbox.la1);
+    const s = Math.min(sx, sy);
+    const offX = (MAP.W - (bbox.lo2 - bbox.lo1) * s) / 2, offY = (MAP.H - (bbox.la2 - bbox.la1) * s) / 2;
+    MAP.proj = (lat, lon) => [offX + (lon - bbox.lo1) * s, offY + (bbox.la2 - lat) * s];
+    MAP.scl = s;
+    MAP.unproj = (x, y) => [bbox.la2 - (y - offY) / s, bbox.lo1 + (x - offX) / s];
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.id = 'mapg';
+    /* basemap sits under everything: grayscale OSM tiles, online only */
+    const basemap = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    basemap.id = 'basemap'; basemap.setAttribute('class', 'basemap');
+    g.append(basemap);
+    /* routes: every line the same black — routes are distinguished by
+       number badges and labels, never by per-route colors */
+    for (const r of PACK.pack.routes) {
+      const d = r.shape.map((p, i) => { const [x, y] = MAP.proj(p[1], p[0]); return (i ? 'L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1); }).join(' ');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d); path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', 'var(--ink)');
+      path.setAttribute('stroke-width', '2.4'); path.setAttribute('stroke-linecap', 'round'); path.setAttribute('stroke-linejoin', 'round');
+      path.setAttribute('data-route', r.id);
+      g.append(path);
+      /* termini: small teal squares at both ends */
+      for (const end of [r.shape[0], r.shape[r.shape.length - 1]]) {
+        const [ex, ey] = MAP.proj(end[1], end[0]);
+        const term = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        term.setAttribute('x', ex - 3.5); term.setAttribute('y', ey - 3.5);
+        term.setAttribute('width', 7); term.setAttribute('height', 7);
+        term.setAttribute('transform', `rotate(45 ${ex} ${ey})`);
+        term.setAttribute('class', 'term'); term.setAttribute('data-route', r.id);
+        g.append(term);
+      }
+    }
+    /* number badges at each route's start — labels do the distinguishing */
+    const badges = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    badges.id = 'badges';
+    for (const r of PACK.pack.routes) {
+      const [x, y] = MAP.proj(r.shape[0][1], r.shape[0][0]);
+      const bg = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      bg.setAttribute('class', 'numbadge'); bg.setAttribute('data-route', r.id);
+      bg.setAttribute('transform', `translate(${x} ${y})`);
+      bg.setAttribute('pointer-events', 'none');
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', 0); c.setAttribute('cy', 0); c.setAttribute('r', 8);
+      c.setAttribute('stroke', 'var(--ink)'); c.setAttribute('stroke-width', '2');
+      const tx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tx.setAttribute('x', 0); tx.setAttribute('y', 3.2); tx.setAttribute('text-anchor', 'middle');
+      tx.setAttribute('font-size', '9.5'); tx.textContent = r.number;
+      bg.append(c, tx);
+      badges.append(bg);
+    }
+    g.append(badges);
+    /* landmarks: teal dot, paper halo, name label tucked alongside */
+    for (const l of PACK.pack.landmarks) {
+      const [x, y] = MAP.proj(l.lat, l.lon);
+      const gp = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      gp.setAttribute('class', 'mland'); gp.setAttribute('data-lm', l.id); gp.setAttribute('tabindex', '0'); gp.setAttribute('role', 'button');
+      const halo = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      halo.setAttribute('cx', x); halo.setAttribute('cy', y); halo.setAttribute('r', 12);
+      halo.setAttribute('fill', 'transparent'); // generous touch target
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', x); c.setAttribute('cy', y); c.setAttribute('r', 5);
+      c.setAttribute('fill', 'var(--paper)'); c.setAttribute('stroke', 'var(--ink)'); c.setAttribute('stroke-width', '2.5');
+      const tx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      tx.setAttribute('x', x + 9); tx.setAttribute('y', y + 4); tx.textContent = l.name;
+      gp.append(halo, c, tx);
+      g.append(gp);
+    }
+    g.append(marker);
+    svg.innerHTML = ''; svg.append(g);
+    applyT();
+    paintChips();
+
+    if (MAP.focusId) {
+      if (MAP.focusId.startsWith('lm:')) {
+        const lm = PACK.pack.landmarks.find(x => x.id === MAP.focusId.slice(3));
+        if (lm) { const [x, y] = MAP.proj(lm.lat, lm.lon); tweenView(x, y, 2.2); setTimeout(() => openLandmark(lm.id), REDUCED ? 60 : 400); }
+      } else {
+        const r = PACK.pack.routes.find(x => x.id === MAP.focusId);
+        if (r) {
+          selectRoute(r.id, { draw: true });
+          const bb = { lo1: 999, la1: 999, lo2: -999, la2: -999 };
+          r.shape.forEach(p => { bb.lo1 = Math.min(bb.lo1, p[0]); bb.la1 = Math.min(bb.la1, p[1]); bb.lo2 = Math.max(bb.lo2, p[0]); bb.la2 = Math.max(bb.la2, p[1]); });
+          const [x1, y1] = MAP.proj(bb.la2, bb.lo1), [x2, y2] = MAP.proj(bb.la1, bb.lo2);
+          const k = Math.min(3, Math.min(MAP.W / Math.max(60, x2 - x1), MAP.H / Math.max(60, y2 - y1)) * 0.9);
+          tweenView((x1 + x2) / 2, (y1 + y2) / 2, k);
+        }
+      }
+    }
+  }
+
+  /* ---------- selection: red line on black casing + draw-in ---------- */
+  function selectRoute(id, opts) {
+    opts = opts || {};
+    MAP.sel = id;
+    const g = svg.querySelector('#mapg'); if (!g) return;
+    g.classList.add('hasSel');
+    g.querySelectorAll('[data-route]').forEach(p => p.classList.toggle('sel', p.getAttribute('data-route') === id));
+    const path = g.querySelector('path[data-route="' + id + '"]');
+    /* black casing under the red line: the selection stays legible everywhere */
+    let caseP = g.querySelector('path.case[data-route="' + id + '"]');
+    if (path && !caseP) {
+      caseP = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      caseP.setAttribute('d', path.getAttribute('d'));
+      caseP.setAttribute('fill', 'none');
+      caseP.setAttribute('stroke', 'var(--ink)');
+      caseP.setAttribute('stroke-width', '6.6');
+      caseP.setAttribute('stroke-linecap', 'round'); caseP.setAttribute('stroke-linejoin', 'round');
+      caseP.setAttribute('class', 'case'); caseP.setAttribute('data-route', id);
+      caseP.setAttribute('aria-hidden', 'true');
+      path.parentNode.insertBefore(caseP, path);
+    }
+    if (path && opts.draw !== false && !REDUCED) { if (caseP) drawIn(caseP); drawIn(path); }
+    paintChips();
+  }
+  function clearSel() {
+    MAP.sel = null;
+    const g = svg.querySelector('#mapg'); if (!g) return;
+    g.classList.remove('hasSel');
+    g.querySelectorAll('[data-route]').forEach(p => p.classList.remove('sel'));
+    g.querySelectorAll('path.case').forEach(p => p.remove());
+    paintChips();
+  }
+  function drawIn(path) {
+    /* route reveal: the red line draws from start to destination */
+    let len = 0;
+    try { len = path.getTotalLength(); } catch (e) { return; }
+    if (!len || !path.animate) return;
+    path.style.strokeDasharray = len;
+    path.style.strokeDashoffset = len;
+    const an = path.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: 700, easing: 'cubic-bezier(.3,.7,.3,1)' });
+    an.onfinish = () => { path.style.strokeDasharray = ''; path.style.strokeDashoffset = ''; };
+  }
+  function paintChips() {
+    [...chiprow.children].forEach((c, i) => {
+      if (i === 0) { c.setAttribute('aria-pressed', MAP.sel ? 'false' : 'true'); return; }
+      const r = PACK.pack.routes[i - 1];
+      c.setAttribute('aria-pressed', MAP.sel === r.id ? 'true' : 'false');
+    });
+  }
+
+  /* ---------- eased fly-to (restrained; cancels on user touch) ---------- */
+  function tweenView(x, y, k, ms) {
+    cancelAnimationFrame(MAP.tweenId);
+    const tk = k || MAP.k, ttx = MAP.W / 2 - tk * x, tty = MAP.H / 2 - tk * y;
+    if (REDUCED || !window.requestAnimationFrame) { MAP.k = tk; MAP.tx = ttx; MAP.ty = tty; applyT(); return; }
+    const from = { k: MAP.k, tx: MAP.tx, ty: MAP.ty }, dur = ms || 420, t0 = performance.now();
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+      MAP.k = from.k + (tk - from.k) * e;
+      MAP.tx = from.tx + (ttx - from.tx) * e;
+      MAP.ty = from.ty + (tty - from.ty) * e;
+      applyT();
+      if (p < 1) MAP.tweenId = requestAnimationFrame(step);
+    };
+    MAP.tweenId = requestAnimationFrame(step);
+  }
+
+  /* ---------- raster basemap — grayscale OSM tiles, online only ----------
+     Map units are linear in degrees, so the visible lat/lon box comes from
+     unproj; tiles are Web Mercator but a city-scale tile is placed from its
+     projected corners (sub-pixel stretch at Dili's latitude). */
+  function scheduleBasemap() {
+    if (scheduleBasemap.queued) return;
+    scheduleBasemap.queued = true;
+    requestAnimationFrame(() => { scheduleBasemap.queued = false; updateBasemap(); });
+  }
+  function updateBasemap() {
+    const bg = svg.querySelector('#basemap'); if (!bg || !MAP.unproj) return;
+    const online = isOnline();
+    attr.style.display = online ? '' : 'none';
+    if (!online) { bg.innerHTML = ''; return; }
+    const [laT, loL] = MAP.unproj(-MAP.tx / MAP.k, -MAP.ty / MAP.k);
+    const [laB, loR] = MAP.unproj((MAP.W - MAP.tx) / MAP.k, (MAP.H - MAP.ty) / MAP.k);
+    const z = Math.max(11, Math.min(17, Math.round(Math.log2(360 * MAP.scl * MAP.k / 256))));
+    const n = Math.pow(2, z);
+    const xt = lo => Math.min(n - 1, Math.max(0, Math.floor((lo + 180) / 360 * n)));
+    const yt = la => { const r = Math.max(-85, Math.min(85, la)) * Math.PI / 180; return Math.min(n - 1, Math.max(0, Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * n))); };
+    const corner = (tz, tx2, ty2) => { const lo = tx2 / Math.pow(2, tz) * 360 - 180; const rr = (1 - 2 * ty2 / Math.pow(2, tz)) * Math.PI; return [Math.atan(Math.sinh(rr)) * 180 / Math.PI, lo]; };
+    const x0 = xt(loL), x1 = xt(loR), y0 = yt(laT), y1 = yt(laB);
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) > 64) { bg.innerHTML = ''; return; }
+    const keep = new Set();
+    for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) {
+      const key = z + '/' + x + '/' + y; keep.add(key);
+      if (bg.querySelector(`[data-t="${key}"]`)) continue;
+      const [nla, nlo] = corner(z, x, y), [sla, slo] = corner(z, x + 1, y + 1);
+      const [px, py] = MAP.proj(nla, nlo), [qx, qy] = MAP.proj(sla, slo);
+      const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+      img.setAttribute('x', px.toFixed(1)); img.setAttribute('y', py.toFixed(1));
+      img.setAttribute('width', (qx - px).toFixed(1)); img.setAttribute('height', (qy - py).toFixed(1));
+      img.setAttribute('href', `https://tile.openstreetmap.org/${z}/${x}/${y}.png`);
+      img.setAttribute('data-t', key);
+      img.addEventListener('error', () => img.remove());
+      bg.append(img);
+    }
+    bg.querySelectorAll('image').forEach(im => { if (!keep.has(im.getAttribute('data-t'))) im.remove(); });
+  }
+  function applyT() {
+    const g = svg.querySelector('#mapg'); if (!g) return;
+    g.setAttribute('transform', `translate(${MAP.tx} ${MAP.ty}) scale(${MAP.k})`);
+    scheduleBasemap();
+  }
+  function centerOn(x, y, k) {
+    MAP.k = k || MAP.k;
+    MAP.tx = MAP.W / 2 - MAP.k * x; MAP.ty = MAP.H / 2 - MAP.k * y;
+    applyT();
+  }
+
+  /* ---------- chips: select a route (red) or show all (black) ---------- */
+  chiprow.append(el('button', { class: 'chip', 'aria-pressed': 'true', onclick: () => { clearSel(); tweenView(MAP.W / 2, MAP.H / 2, 1); } }, t('all')));
+  chiprow.append(el('button', { class: 'chip', 'aria-pressed': 'false', onclick: openFavs }, '★ ' + t('favorites')));
+  for (const r of PACK.pack.routes) {
+    const c = el('button', { class: 'chip', 'aria-pressed': 'false', 'aria-label': r.name, onclick: () => {
+      cancelAnimationFrame(MAP.tweenId);
+      if (MAP.sel === r.id) { clearSel(); return; }
+      selectRoute(r.id, { draw: true });
+      const bb = { lo1: 999, la1: 999, lo2: -999, la2: -999 };
+      r.shape.forEach(p => { bb.lo1 = Math.min(bb.lo1, p[0]); bb.la1 = Math.min(bb.la1, p[1]); bb.lo2 = Math.max(bb.lo2, p[0]); bb.la2 = Math.max(bb.la2, p[1]); });
+      const [x1, y1] = MAP.proj(bb.la2, bb.lo1), [x2, y2] = MAP.proj(bb.la1, bb.lo2);
+      const k = Math.min(2.4, Math.min(MAP.W / Math.max(60, x2 - x1), MAP.H / Math.max(60, y2 - y1)) * 0.9);
+      tweenView((x1 + x2) / 2, (y1 + y2) / 2, k);
+    } }, String(r.number));
+    chiprow.append(c);
+  }
+
+  /* ---------- pan & pinch ---------- */
+  wrap.addEventListener('pointerdown', e => {
+    cancelAnimationFrame(MAP.tweenId);
+    try { wrap.setPointerCapture(e.pointerId); } catch (err) { /* pointer already inactive (e.g. synthetic events) */ }
+    MAP.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    MAP.moved = false;
+  });
+  wrap.addEventListener('pointermove', e => {
+    if (!MAP.pointers.has(e.pointerId)) return;
+    const prev = MAP.pointers.get(e.pointerId);
+    MAP.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (MAP.pointers.size === 1) {
+      const dx = e.clientX - prev.x, dy = e.clientY - prev.y;
+      if (Math.abs(dx) + Math.abs(dy) > 3) MAP.moved = true;
+      MAP.tx += dx; MAP.ty += dy; applyT();
+    } else if (MAP.pointers.size === 2) {
+      MAP.moved = true;
+      const [p1, p2] = [...MAP.pointers.values()];
+      const dNow = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      const r = wrap.getBoundingClientRect();
+      const midX = (p1.x + p2.x) / 2 - r.left, midY = (p1.y + p2.y) / 2 - r.top;
+      if (MAP.lastPinch) {
+        const ratio = dNow / MAP.lastPinch.d;
+        const nk = Math.min(8, Math.max(0.6, MAP.k * ratio));
+        MAP.tx = midX - (midX - MAP.tx) * (nk / MAP.k);
+        MAP.ty = midY - (midY - MAP.ty) * (nk / MAP.k);
+        MAP.k = nk;
+      }
+      MAP.lastPinch = { d: dNow };
+      applyT();
+    }
+  });
+  const endPtr = e => {
+    if (MAP.pointers.has(e.pointerId) && MAP.pointers.size === 1 && !MAP.moved) tap(e);
+    MAP.pointers.delete(e.pointerId);
+    MAP.lastPinch = null;
+  };
+  wrap.addEventListener('pointerup', endPtr);
+  wrap.addEventListener('pointercancel', e => { MAP.pointers.delete(e.pointerId); MAP.lastPinch = null; });
+  wrap.addEventListener('wheel', e => {
+    e.preventDefault();
+    cancelAnimationFrame(MAP.tweenId);
+    const r = wrap.getBoundingClientRect();
+    const mx = e.clientX - r.left, my = e.clientY - r.top;
+    const nk = Math.min(8, Math.max(0.6, MAP.k * (e.deltaY < 0 ? 1.15 : 0.87)));
+    MAP.tx = mx - (mx - MAP.tx) * (nk / MAP.k); MAP.ty = my - (my - MAP.ty) * (nk / MAP.k);
+    MAP.k = nk; applyT();
+  }, { passive: false });
+  function tap(e) {
+    const tEl = document.elementFromPoint(e.clientX, e.clientY);
+    const gp = tEl && tEl.closest && tEl.closest('[data-lm]');
+    if (gp) {
+      /* stop selection: brief enlarge, name is already labelled — no bouncing */
+      if (!REDUCED && gp.animate) gp.animate(
+        [{ transform: 'scale(1)' }, { transform: 'scale(1.45)' }, { transform: 'scale(1)' }],
+        { duration: 280, easing: 'ease-out' });
+      openLandmark(gp.getAttribute('data-lm'));
+    }
+  }
+
+  function openLandmark(id) {
+    const l = PACK.pack.landmarks.find(x => x.id === id); if (!l) return;
+    const box = el('div', {},
+      el('h3', { id: 'sheettitle' }, l.name),
+      el('p', { class: 'muted small' }, `${l.lat.toFixed(4)}, ${l.lon.toFixed(4)} · © OpenStreetMap`),
+      el('p', { class: 'card-sub', style: 'margin-top:6px;font-weight:600' }, t('landmark_served_by')));
+    if (l.routes.length) {
+      const chips = el('div', { class: 'chiprow', style: 'padding:6px 0' });
+      for (const rid of l.routes) {
+        const r = PACK.pack.routes.find(x => x.id === rid);
+        chips.append(el('button', { class: 'chip', onclick: () => { closeSheet(); location.hash = '#/route/' + rid; } },
+          el('b', { style: 'font-weight:700' }, String(r.number)), ' ' + r.name));
+      }
+      box.append(chips);
+    } else box.append(el('p', { class: 'muted small' }, t('no_routes_serve')));
+    box.append(el('div', { class: 'btn-row', style: 'justify-content:flex-end' }, el('button', { class: 'btn filled', onclick: closeSheet }, t('close'))));
+    openSheet(box);
+  }
+
+  async function openFavs() {
+    let favs = []; try { favs = await getFavs(); } catch (e) { }
+    const box = el('div', {}, el('h3', { id: 'sheettitle' }, t('favorites')));
+    if (!favs.length) box.append(emptyState('i-star', '', t('no_favs')));
+    else {
+      const rows = el('div', { style: 'margin:4px 0' });
+      for (const fid of favs) {
+        const r = PACK.pack.routes.find(x => x.id === fid); if (!r) continue;
+        rows.append(el('button', { class: 'list-item', onclick: () => { closeSheet(); location.hash = '#/route/' + r.id; } },
+          el('span', { class: 'lead sel', style: 'width:40px;height:40px' }, String(r.number)),
+          el('span', { class: 'txt' },
+            el('span', { class: 't1' }, r.name),
+            el('span', { class: 't2' }, r.areas.join(' · '))),
+          icon('i-right')));
+      }
+      box.append(rows);
+    }
+    box.append(el('div', { class: 'btn-row', style: 'justify-content:flex-end' }, el('button', { class: 'btn filled', onclick: closeSheet }, t('close'))));
+    openSheet(box);
+  }
+
+  function locateMe() {
+    if (!navigator.geolocation) { snack(t('location_denied')); return; }
+    snack(t('locating'));
+    navigator.geolocation.getCurrentPosition(pos => {
+      const [x, y] = MAP.proj(pos.coords.latitude, pos.coords.longitude);
+      marker.innerHTML = '';
+      const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      ring.setAttribute('cx', x); ring.setAttribute('cy', y); ring.setAttribute('r', 12);
+      ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', 'var(--apri)'); ring.setAttribute('stroke-width', '2.5');
+      ring.setAttribute('opacity', '.5');
+      ring.setAttribute('class', 'meloc-ring');
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', x); dot.setAttribute('cy', y); dot.setAttribute('r', 6);
+      dot.setAttribute('fill', 'var(--ink)'); dot.setAttribute('stroke', 'var(--paper)'); dot.setAttribute('stroke-width', '2.5');
+      marker.append(ring, dot); marker.style.display = '';
+      tweenView(x, y, Math.max(MAP.k, 2));
+    }, () => snack(t('location_denied')), { enableHighAccuracy: false, timeout: 15000, maximumAge: 30000 });
+  }
+}
+
+/* =====================================================================
+   boot
+   ===================================================================== */
+(async function boot() {
+  document.documentElement.lang = LANG;
+  try { const mql = window.matchMedia('(prefers-color-scheme: dark)'); if (mql.addEventListener) mql.addEventListener('change', renderStatusChips); } catch (e) { }
+  renderNav('routes');
+  await loadPack();
+  route();
+  initSW();
+})();
+
+</script>
+</body>
+</html>

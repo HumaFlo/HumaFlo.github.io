@@ -1,0 +1,9 @@
+{
+  "packId": "dili-mobility",
+  "latestVersion": "1.1.0",
+  "url": "data/mobility-pack-v1.json",
+  "sha256": "cd044eccb111c0336ab2550f2a07e4392d9cb6fd27ac63427866063b068f0367",
+  "sizeBytes": 24752,
+  "generatedAt": "2026-11-09",
+  "minAppVersion": "1.0.0"
+}
