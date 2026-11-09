@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="967" height="442" viewBox="0 0 967 442">
+  <rect width="967" height="442" fill="#FAF9F7"/>
+  <path d="M0 64.5h967" stroke="#E7E5E4"/>
+  <text x="36" y="39" fill="#1C1917" font-family="ui-monospace, monospace" font-size="12" font-weight="600" letter-spacing="1.2">BRIEFING DASHBOARD</text>
+  <text x="931" y="39" fill="#78716C" font-family="ui-monospace, monospace" font-size="10" text-anchor="end" letter-spacing="1">TIMOR-LESTE · 2024</text>
+  <text x="36" y="111" fill="#9A3412" font-family="ui-monospace, monospace" font-size="11" font-weight="600" letter-spacing="1.1">TRANSPORT SECTOR BRIEFING</text>
+  <path d="M36 128h476" stroke="#1C1917" stroke-width="2"/>
+  <text x="36" y="181" fill="#1C1917" font-family="Arial, sans-serif" font-size="37" font-weight="600" letter-spacing="-1">Public Transport</text>
+  <text x="36" y="224" fill="#1C1917" font-family="Arial, sans-serif" font-size="37" font-weight="600" letter-spacing="-1">Master Plan 2024</text>
+  <text x="36" y="260" fill="#57534E" font-family="Arial, sans-serif" font-size="15">Routes, investment, and delivery priorities</text>
+  <text x="615" y="151" fill="#C2410C" font-family="Arial, sans-serif" font-size="68" font-weight="600" letter-spacing="-2">90.2%</text>
+  <text x="619" y="180" fill="#1C1917" font-family="Arial, sans-serif" font-size="15" font-weight="600">due by 2030</text>
+  <text x="619" y="201" fill="#78716C" font-family="ui-monospace, monospace" font-size="10">OF THE US$35.14M PROGRAMME</text>
+  <path d="M36 297h895" stroke="#D6D3D1" stroke-width="2"/>
+  <path d="M36 297h205" stroke="#C2410C" stroke-width="2"/>
+  <path d="M262 297h205M488 297h205M714 297h217" stroke="#1C1917" stroke-width="2"/>
+  <text x="36" y="326" fill="#57534E" font-family="Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1">PLANNED NETWORK</text>
+  <text x="36" y="366" fill="#1C1917" font-family="Arial, sans-serif" font-size="27" font-weight="600">1,494 km</text>
+  <text x="262" y="326" fill="#57534E" font-family="Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1">ROUTES</text>
+  <text x="262" y="366" fill="#1C1917" font-family="Arial, sans-serif" font-size="27" font-weight="600">26</text>
+  <text x="488" y="326" fill="#57534E" font-family="Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1">BUILD PROGRAMME</text>
+  <text x="488" y="366" fill="#1C1917" font-family="Arial, sans-serif" font-size="27" font-weight="600">74 sites</text>
+  <text x="714" y="326" fill="#57534E" font-family="Arial, sans-serif" font-size="10" font-weight="600" letter-spacing="1">INDICATIVE INVESTMENT</text>
+  <text x="714" y="366" fill="#1C1917" font-family="Arial, sans-serif" font-size="27" font-weight="600">US$35.14M</text>
+  <text x="36" y="415" fill="#78716C" font-family="ui-monospace, monospace" font-size="10" letter-spacing=".3">PHASED THROUGH 2035 · ROUTES · INVESTMENT · REFORM</text>
+</svg>
