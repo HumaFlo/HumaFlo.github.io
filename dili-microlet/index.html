@@ -494,7 +494,6 @@ const I18N = {
   app_name: ['Mikrolet', 'Mikrolet', 'Mikrolet', 'Mikrolet'],
   tagline: ['Find your microlet. Works offline.', 'Hetan ita-nia mikrolet. Bele uza offline.', 'Encontre o seu microlet. Funciona offline.', 'Temukan mikrolet Anda. Bisa dipakai offline.'],
   hero_title: ["Ba ne'ebé nonoi?", "Ba ne'ebé nonoi?", "Ba ne'ebé nonoi?", "Ba ne'ebé nonoi?"],
-  hero_sub: ['Your guide to getting around Dili by microlet', 'Ita-nia gia mikrolet iha Dili', 'O seu guia de microletes em Díli', 'Panduan mikrolet untuk Dili'],
   featured_lm: ['Landmarks', 'Fatin sira', 'Pontos de referência', 'Tempat terkenal'],
   all_routes_map: ['All {n} routes on the map', 'Rute {n} hotu iha mapa', 'Todas as {n} rotas no mapa', 'Semua {n} rute di peta'],
   no_route_near: ['No route nearby', 'La iha rute besik', 'Nenhuma rota por perto', 'Tidak ada rute terdekat'],
@@ -524,7 +523,6 @@ const I18N = {
   empty_routes_title: ['Download the pack to see routes', 'Baxa pake hodi haree rota sira', 'Baixe o pacote para ver as rotas', 'Unduh paket untuk melihat rute'],
   empty_routes_body: ['Route and landmark data is delivered in the Dili mobility pack. It works offline after download.', 'Dadus rota no landmark iha iha pake Dili. Depois baxa, bele uza offline.', 'Os dados de rotas vêm no pacote de mobilidade. Funciona offline depois de baixar.', 'Data rute ada di paket mobilitas Dili. Bisa offline setelah diunduh.'],
   go_offline_tab: ['Get the offline pack', 'Musa pake offline', 'Obter o pacote offline', 'Ambil paket offline'],
-  mast_kicker: ['Dili · Timor-Leste', 'Dili · Timor-Leste', 'Dili · Timor-Leste', 'Dili · Timor-Leste'],
   mast_count: ['{n} routes mapped', '{n} rota rejistu', '{n} rotas mapeadas', '{n} rute terpetakan'],
   fare: ['$0.25 flat', '$0.25 ras', '$0,25 fixo', '$0,25 flat'],
   fare_l: ['Fare', 'Osan', 'Tarifa', 'Tarif'],
@@ -631,7 +629,6 @@ const I18N = {
   confirm: ['Confirm', 'Konfirma', 'Confirmar', 'Konfirmasi'],
   loading: ['Loading…', 'Karga hela…', 'A carregar…', 'Memuat…'],
   error_generic: ['Something went wrong.', 'Buat ruma falla.', 'Algo falhou.', 'Terjadi kesalahan.'],
-  data_banner_unverified: ['All route data is unverified and needs human review before official release.', 'Dadus rota hotu sei la revizaun — presiza revizaun antes publika.', 'Todos os dados estão por rever antes da publicação.', 'Semua data belum ditinjau sebelum rilis.'],
   install_sheet_ios: ['iPhone — Safari', 'iPhone — Safari', 'iPhone — Safari', 'iPhone — Safari'],
   install_sheet_android: ['Android — Chrome', 'Android — Chrome', 'Android — Chrome', 'Android — Chrome'],
   show_android: ['Show Android', 'Hatudu Android', 'Mostrar Android', 'Tampilkan Android'],
@@ -1064,9 +1061,7 @@ async function viewRoutes() {
 
   /* masthead — plain type, the task first */
   v.append(el('div', { class: 'mast' },
-    el('p', { class: 'kicker' }, t('mast_kicker')),
-    el('h1', {}, t('hero_title')),
-    el('p', { class: 'hero-sub' }, t('hero_sub'))));
+    el('h1', {}, t('hero_title'))));
   v.append(packLine());
 
   if (!PACK) {
@@ -1078,7 +1073,6 @@ async function viewRoutes() {
     return;
   }
   if (!isOnline()) v.append(banner('info', 'i-cloudoff', t('offline_banner')));
-  v.append(banner('warn', 'i-warn', t('data_banner_unverified')));
 
   /* search — quiet field; matches routes and landmarks while typing.
      Skill rule: never a blank search screen — recents + popular places
