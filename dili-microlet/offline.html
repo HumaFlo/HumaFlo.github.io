@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FFFFFF">
+<title>Mikrolet — offline</title>
+<style>
+  :root{
+    --paper:#FFFFFF; --ink:#000000; --ink-2:rgba(0,0,0,.64);
+    --hair:rgba(0,0,0,.16); --apri:#FFC72C; --on-apri:#000000; --red:#DA291C; --on-red:#FFFFFF;
+    --rad-s:12px;
+    --sh-2:0 12px 32px rgba(0,0,0,.16),0 2px 8px rgba(0,0,0,.08);
+    --f:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue','Segoe UI',Roboto,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#000000; --ink:#FFFFFF; --ink-2:rgba(255,255,255,.68); --hair:rgba(255,255,255,.22); --apri:#FFC72C; --on-apri:#000000; }
+  }
+  body{margin:0;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    font-family:var(--f);
+    background:var(--paper);color:var(--ink);text-align:center;padding:24px}
+  .box{max-width:420px;width:100%}
+  svg.cl{width:52px;height:52px;fill:var(--ink-2);margin-bottom:16px}
+  h1{font-weight:700;font-size:21px;margin:0 0 8px;letter-spacing:-.01em}
+  p{font-size:17px;line-height:1.5;color:var(--ink-2);margin:0 0 24px}
+  a{display:inline-block;background:var(--apri);color:var(--on-apri);
+    text-decoration:none;font-weight:700;
+    padding:16px 24px;border-radius:var(--rad-s);font-size:17px;box-shadow:var(--sh-2)}
+  a:active{filter:brightness(.95)}
+</style>
+</head>
+<body>
+<div class="box">
+  <svg class="cl" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46A5.497 5.497 0 0 1 17.5 10.5v.5H19a3.5 3.5 0 0 1 2.44 6l1.43 1.43A5.5 5.5 0 0 0 19.35 10.04zM3 5.27l2.77 2.77h-.42A5.994 5.994 0 0 0 2 14c0 3.31 2.69 6 6 6h11.73l2 2L23 20.73 4.27 2 3 5.27z"/></svg>
+  <h1>You are offline</h1>
+  <p>Mikrolet could not load. If you have downloaded the Dili mobility pack before, open the app from your Home Screen — your saved routes will be there.</p>
+  <a href="./">Try again</a>
+</div>
+</body>
+</html>
