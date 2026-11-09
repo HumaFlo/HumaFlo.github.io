@@ -3,7 +3,7 @@
    The mobility pack itself is stored in IndexedDB after an explicit download;
    data/*.json responses are network-first with a cache fallback for update checks. */
 'use strict';
-const VERSION = 'v1.5.0';
+const VERSION = 'v1.5.1';
 const APP_CACHE_PREFIX = 'dili-app-';
 const DATA_CACHE_PREFIX = 'dili-data-';
 const APP_CACHE = `dili-app-${VERSION}`;

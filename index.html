@@ -214,6 +214,17 @@
         background: var(--surface);
       }
 
+      .project-preview--portrait {
+        display: flex;
+        justify-content: center;
+      }
+
+      .project-preview--portrait img {
+        width: auto;
+        max-width: 100%;
+        max-height: 32rem;
+      }
+
       .project-link {
         display: inline-flex;
         gap: 0.45rem;
@@ -494,15 +505,14 @@
             <h3>Dili microlet routes</h3>
             <p>
               A mobile-first guide to Dili's microlet routes, landmarks, offline maps, and
-              trip guidance. Route information is an unofficial proof of concept and needs
-              local verification.
+              trip guidance.
             </p>
-            <figure class="project-preview">
+            <figure class="project-preview project-preview--portrait">
               <img
-                src="/images/projects/dili-microlet.png"
-                alt="Mikrolet app icon in Timor-Leste's flag colors"
-                width="512"
-                height="512"
+                src="/images/projects/dili-microlet.jpg"
+                alt="Mikrolet app showing Dili route search controls and navigation tabs"
+                width="1108"
+                height="2000"
                 loading="lazy"
                 decoding="async"
               >
