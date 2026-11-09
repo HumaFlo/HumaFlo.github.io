@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://tile.openstreetmap.org; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>Mikrolet — microlet routes &amp; offline map</title>
-<meta name="description" content="Mikrolet finds Dili microlet routes, areas and landmarks. Download the Dili mobility pack and use core route information offline. Unofficial proof of concept — data pending review.">
+<meta name="description" content="Mikrolet finds Dili microlet routes, areas and landmarks. Download the Dili mobility pack and use core route information offline.">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFFFF">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
 <link rel="manifest" href="manifest.webmanifest">
@@ -18,7 +18,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 /* =====================================================================
-   Mikrolet — Timor-Leste flag design system, v1.5.0 (skill-applied)
+   Mikrolet — Timor-Leste flag design system, v1.5.1 (skill-applied)
    Colors (60/30/10): white page (~60%), black text/controls (~30%),
    red CTA + yellow highlights (~10%) — alpha tints of those only.
    Type: ONE family (system sans), exactly FOUR sizes and TWO weights:
@@ -333,7 +333,11 @@ h2.sec:first-child{border-top:none;padding-top:8px;margin-top:16px}
 .a2hs{display:flex;align-items:center;gap:12px;border:1px solid var(--hair);background:var(--apri-hint);
   border-radius:var(--rad-l);padding:12px 8px 12px 16px;
   margin:24px 0 8px;position:relative}
+.a2hs-action{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:0;border:0;
+  background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.a2hs-action:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .a2hs .ic{width:20px;height:20px;fill:var(--ink);flex:none}
+.a2hs .t1,.a2hs .t2{display:block}
 .a2hs .t1{font-weight:700;font-size:var(--fs-b);line-height:1.3}
 .a2hs .t2{font-size:var(--fs-c);color:var(--ink-2)}
 .a2hs .x{margin-left:auto;flex:none;width:40px;height:40px;color:var(--ink-2)}
@@ -473,7 +477,7 @@ a{color:var(--ink);text-decoration-thickness:1.5px;text-underline-offset:3px}
    No runtime AI or third-party scripts. Logic is local; online map tiles load from OpenStreetMap.
    ===================================================================== */
 const CFG = {
-  APP_VERSION: '1.5.0',
+  APP_VERSION: '1.5.1',
   PACK_ID: 'dili-mobility',
   PACK_SHA: 'cd044eccb111c0336ab2550f2a07e4392d9cb6fd27ac63427866063b068f0367',
   PACK_VER: '1.1.0',
@@ -925,6 +929,13 @@ function isIOS() {
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 }
 
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+});
+window.addEventListener('appinstalled', () => { deferredInstallPrompt = null; });
+
 /* ---------- router ---------- */
 const TRIP = { watchId: null, stop: null };   // live trip state (cleaned up on navigation)
 function stopTripWatch() {
@@ -1024,11 +1035,12 @@ function appendA2hs(v) {
   let off = false; try { off = localStorage.getItem('dili.a2hs') === '1'; } catch (e) { }
   if (standalone || off) return;
   const box = el('div', { class: 'a2hs' },
-    icon('i-addhome', 'ic'),
-    el('div', { style: 'min-width:0' },
-      el('div', { class: 't1' }, t('install_title')),
-      el('div', { class: 't2' }, t('a2hs_sub'))),
-    el('button', { class: 'icon-btn x', 'aria-label': t('close'), onclick: () => { try { localStorage.setItem('dili.a2hs', '1'); } catch (e) { } box.remove(); } }, icon('i-close')));
+    el('button', { class: 'a2hs-action', type: 'button', onclick: openInstallSheet },
+      icon('i-addhome', 'ic'),
+      el('span', { style: 'min-width:0' },
+        el('span', { class: 't1' }, t('install_title')),
+        el('span', { class: 't2' }, t('a2hs_sub')))),
+    el('button', { class: 'icon-btn x', 'aria-label': t('close'), onclick: e => { e.stopPropagation(); try { localStorage.setItem('dili.a2hs', '1'); } catch (e) { } box.remove(); } }, icon('i-close')));
   v.append(box);
 }
 /* quiet pack status line — visible but calm */
@@ -1581,7 +1593,19 @@ async function maybeOnboard() {
       el('button', { class: 'btn filled', onclick: () => { closeSheet(); location.hash = '#/offline'; } }, icon('i-download'), t('onboard_offline')),
       el('button', { class: 'btn txt', onclick: closeSheet }, t('onboard_ok')))));
 }
-function openInstallSheet() {
+async function openInstallSheet() {
+  if (!isIOS() && deferredInstallPrompt) {
+    const installPrompt = deferredInstallPrompt;
+    deferredInstallPrompt = null;
+    let choice;
+    try {
+      installPrompt.prompt();
+      choice = await installPrompt.userChoice;
+    } catch (error) {
+      console.warn('Native install prompt failed:', error);
+    }
+    if (choice?.outcome === 'accepted') return;
+  }
   const mkSteps = (a, b, c) => el('div', {},
     el('div', { class: 'step' }, el('span', { class: 'n' }, '1'), el('p', { html: a })),
     el('div', { class: 'step' }, el('span', { class: 'n' }, '2'), el('p', { html: b })),

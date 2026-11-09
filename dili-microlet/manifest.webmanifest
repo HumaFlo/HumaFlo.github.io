@@ -1,7 +1,7 @@
 {
   "name": "Mikrolet — microlet routes & offline map",
   "short_name": "Mikrolet",
-  "description": "Find Dili microlet routes, areas and landmarks. Download the Dili mobility pack and use core route information offline. Unofficial proof of concept.",
+  "description": "Find Dili microlet routes, areas and landmarks. Download the Dili mobility pack and use core route information offline.",
   "lang": "en",
   "dir": "ltr",
   "start_url": "./",
