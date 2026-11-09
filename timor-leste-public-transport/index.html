@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<title>Timor-Leste Public Transport Master Plan 2024 | HumaFlo</title>
+<meta name="description" content="Explore an executive briefing dashboard for the Timor-Leste Public Transport Master Plan 2024, including routes, investment, delivery phases, and priorities.">
+<link rel="canonical" href="https://humaflo.github.io/timor-leste-public-transport/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://humaflo.github.io/timor-leste-public-transport/">
+<meta property="og:title" content="Timor-Leste Public Transport Master Plan 2024 | HumaFlo">
+<meta property="og:description" content="Explore an executive briefing dashboard for the Timor-Leste Public Transport Master Plan 2024, including routes, investment, delivery phases, and priorities.">
+<meta name="theme-color" content="#FAF9F7">
+<style>
+/* ============ EDITORIAL BRIEF · palette per attached infographic style ============
+   paper #FAF9F7 · surface #FFFFFF · ink #1C1917 · stone muted/faint · hairlines
+   one rust accent #C2410C (+ darker #9A3412 for small text, soft #F6E3D7 fills) */
+:root{
+  --bg:#FAF9F7;--surface:#FFFFFF;--fg:#1C1917;--muted:#57534E;--faint:#6F6A64;
+  --line:#E7E5E4;--hair:#D6D3D1;
+  --accent:#C2410C;--accent-ink:#9A3412;--accent-soft:#F6E3D7;
+  --font:"Avenir Next","Avenir","Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Mono","Roboto Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:12px;-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font:400 15.5px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink);text-decoration:underline;text-underline-offset:2px}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px;border-radius:4px}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:clamp(1.25rem,4vw,2.5rem)}
+.p,em{font-style:normal;color:var(--accent-ink);font-weight:600}
+.mono{font-family:var(--mono)}
+.kicker{font:600 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent-ink)}
+.meta{font:500 11px/1.6 var(--mono);letter-spacing:.02em;color:var(--faint)}
+
+/* ---------- top strip ---------- */
+.topbar{border-bottom:1px solid var(--line)}
+.topbar .wrap{display:flex;align-items:center;gap:12px;min-height:50px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+.brand{display:flex;align-items:baseline;gap:10px;font:600 11px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase}
+.brand small{font:500 10px/1 var(--mono);letter-spacing:.08em;color:var(--faint)}
+.topright{margin-left:auto;display:flex;align-items:center;gap:10px}
+.topright a{display:inline-flex;align-items:center;min-height:44px}
+.clock{font:500 11.5px var(--mono);color:var(--faint);font-variant-numeric:tabular-nums}
+
+/* ---------- masthead ---------- */
+.masthead{padding-block:3.4rem 2.6rem}
+.cols-m{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:2.6rem;align-items:end}
+.masthead .rule{border:0;border-top:2px solid var(--fg);margin:1.1rem 0}
+h1{font-size:clamp(2.1rem,4.4vw,3rem);font-weight:600;line-height:1.06;letter-spacing:-.02em;max-width:20ch}
+.dek{font-size:1.05rem;line-height:1.55;color:var(--muted);max-width:58ch;margin-top:1rem}
+.giant{font-size:clamp(4rem,8.6vw,6.6rem);font-weight:600;line-height:.95;letter-spacing:-.03em;color:var(--accent);font-variant-numeric:tabular-nums}
+.giant .cur{font-size:.34em;font-weight:600;color:var(--faint);letter-spacing:0;vertical-align:.6em}
+.giant-cap{font-size:.95rem;font-weight:600;margin-top:.7rem}
+.giant-src{font:500 10.5px/1.5 var(--mono);letter-spacing:.02em;color:var(--faint);margin-top:.5rem}
+.src{font:500 10.5px/1.5 var(--mono);letter-spacing:.02em;color:var(--faint)}
+
+/* ---------- KPI tiles ---------- */
+.kgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));column-gap:1.6rem;row-gap:1.9rem;margin-top:2.6rem}
+.tile{border-top:2px solid var(--fg);padding-top:.85rem}
+.tile.hot{border-top-color:var(--accent)}
+.lbl{font:600 11px/1.4 var(--font);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);display:block}
+.num{font-size:clamp(1.7rem,2.6vw,2.15rem);font-weight:600;line-height:1.1;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin-block:.45rem .3rem}
+.num .u{font-size:.62em;font-weight:600;color:var(--muted)}
+.num .arr{color:var(--accent-ink)}
+.num .tag{display:inline-block;font:600 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:6px;padding:4px 7px;margin-left:8px;vertical-align:.45em;white-space:nowrap}
+.ctx{font-size:.82rem;line-height:1.45;color:var(--muted)}
+
+/* ---------- accordion sections (01–11) ---------- */
+main{margin-top:1rem}
+.hint{font:600 10.5px/1 var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--faint);padding:1.6rem 0 0}
+section{border-top:1px solid var(--line)}
+.acc-h{margin:0}
+.acc-btn{width:100%;display:grid;grid-template-columns:auto 1fr auto;align-items:center;column-gap:clamp(1rem,3vw,1.7rem);background:none;border:0;padding:1.45rem 0;cursor:pointer;text-align:left}
+.acc-no{font-size:clamp(2.7rem,7vw,4.1rem);font-weight:600;line-height:.92;letter-spacing:-.03em;color:var(--accent);font-variant-numeric:tabular-nums}
+.acc-title{display:block;font-size:clamp(1.25rem,3vw,1.6rem);font-weight:600;letter-spacing:-.015em;line-height:1.15}
+.acc-btn:hover .acc-title{color:var(--accent-ink)}
+.acc-meta{display:block;font:500 10.5px/1.4 var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-top:.4rem}
+.acc-x{position:relative;width:38px;height:38px;justify-self:end;flex:none}
+.acc-x::before,.acc-x::after{content:"";position:absolute;left:50%;top:50%;background:var(--fg);border-radius:2px;transition:transform .18s ease}
+.acc-x::before{width:24px;height:2.5px;transform:translate(-50%,-50%)}
+.acc-x::after{width:2.5px;height:24px;transform:translate(-50%,-50%)}
+.acc-btn:hover .acc-x::before,.acc-btn:hover .acc-x::after{background:var(--accent-ink)}
+.acc-btn[aria-expanded="true"] .acc-x::after{transform:translate(-50%,-50%) scaleY(0)}
+.acc-body{padding-bottom:2.6rem}
+.board{margin-top:.4rem}
+.board-foot{font:400 12.5px/1.6 var(--font);color:var(--muted);margin-top:1.1rem;max-width:75ch}
+.board-foot b{color:var(--fg);font-weight:600}
+
+/* ---------- 01 action queue ---------- */
+.q{list-style:none}
+.q li{display:grid;grid-template-columns:58px 1fr;gap:14px;padding:1.05rem 0;border-bottom:1px solid var(--line)}
+.q li:last-child{border-bottom:none}
+.qn{font:600 24px/1.05 var(--font);color:var(--accent);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.qt{font:600 15px/1.4 var(--font)}
+.qm{font:500 10.5px var(--mono);letter-spacing:.05em;color:var(--faint);text-transform:uppercase;margin-top:5px}
+.qm a{color:var(--accent-ink)}
+.qc{font:400 13px/1.55 var(--font);color:var(--muted);margin-top:6px}
+.qc b{color:var(--accent-ink);font:600 10px var(--mono);letter-spacing:.08em;margin-right:7px;text-transform:uppercase}
+
+/* ---------- 02 route board ---------- */
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:1rem;max-width:520px}
+.seg button{min-height:48px;border:1px solid var(--hair);border-radius:8px;background:var(--surface);cursor:pointer;padding:8px 6px;transition:border-color .15s}
+.seg button:hover{border-color:var(--faint)}
+.seg button b{display:block;font:600 12.5px var(--font);letter-spacing:.02em}
+.seg button small{display:block;font:500 10px var(--mono);letter-spacing:.08em;color:var(--faint);margin-top:4px;text-transform:uppercase}
+.seg button[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.seg button[aria-pressed="true"] small{color:var(--hair)}
+.rgroup{display:none}
+.rgroup.on{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:9px;margin-top:1.1rem}
+.rlist{display:none}
+.rlist b{display:block;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;margin:12px 0 4px;color:var(--accent-ink)}
+.rlist li{font:500 11px/1.8 var(--mono);list-style:none;color:var(--fg)}
+.rchip{min-height:66px;border:1px solid var(--hair);border-radius:8px;background:var(--surface);display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:9px 12px;cursor:pointer;text-align:left;transition:border-color .15s}
+.rchip:hover{border-color:var(--faint)}
+.rchip .no{font:600 23px/1 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.rchip .meta{font:500 10px var(--mono);letter-spacing:.06em;color:var(--faint);margin-top:6px;white-space:nowrap}
+.rchip[aria-pressed="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.rchip[aria-pressed="true"] .meta{color:var(--hair)}
+.rdetail{margin-top:1.1rem;border:1px solid var(--hair);border-top:2px solid var(--accent);border-radius:8px;background:var(--surface);padding:1.1rem 1.3rem;max-width:640px}
+.rdetail .rtag{font:600 10px var(--mono);letter-spacing:.08em;color:var(--accent-ink);text-transform:uppercase}
+.rdetail h3{font:600 16.5px/1.3 var(--font);letter-spacing:-.01em;margin-top:6px}
+.rstats{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:14px}
+.rstat .k{font:600 10px var(--mono);letter-spacing:.07em;color:var(--faint);text-transform:uppercase}
+.rstat .v{font:600 16px/1.25 var(--font);margin-top:4px;font-variant-numeric:tabular-nums}
+.rstat .v .arr{color:var(--accent-ink)}
+
+/* ---------- bar boards ---------- */
+.legend{display:flex;gap:18px;flex-wrap:wrap;font:600 10px var(--mono);letter-spacing:.08em;color:var(--muted);margin:1rem 0 .6rem;text-transform:uppercase}
+.legend .sw{display:inline-block;width:14px;height:9px;border-radius:2px;margin-right:7px;vertical-align:-1px}
+.brow{display:grid;grid-template-columns:110px 1fr 118px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.brow:last-child{border-bottom:none}
+.bl{font:500 11.5px var(--font);color:var(--fg);display:flex;flex-direction:column;align-items:flex-start;gap:4px}
+.bl .yr{font:500 10px var(--mono);letter-spacing:.04em;color:var(--faint)}
+.bl b{display:block;font:600 13px var(--font)}
+.bar{height:13px;border-radius:3px;background:transparent;position:relative}
+.bar i{position:absolute;inset:0 auto 0 0;border-radius:3px;display:block}
+.f-a{background:var(--accent)}
+.f-hair{background:var(--hair)}
+.f-line{background:var(--line)}
+.f-soft{background:var(--accent-soft)}
+.f-surface{background:var(--surface);box-shadow:inset 0 0 0 1px var(--hair)}
+.sw.f-surface{box-shadow:inset 0 0 0 1px var(--hair)}
+.bv{font:600 12.5px var(--font);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bv small{font:500 10px var(--mono);color:var(--faint);display:block;margin-top:2px}
+.firsttag{display:inline-block;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:5px;padding:2px 6px}
+
+/* ---------- 04 riders minibars ---------- */
+.rrow{padding:14px 0;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:none}
+.rrow .rh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.rrow .rh b{font:600 14.5px var(--font)}
+.rrow .rh .delta{font:600 12px var(--mono);color:var(--accent-ink)}
+.rrow .rh .delta span{color:var(--faint);font-weight:500}
+.minibars{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;align-items:end}
+.mb{text-align:center}
+.mb .mv{font:600 12.5px var(--font);font-variant-numeric:tabular-nums}
+.mb .mbar{height:44px;display:flex;align-items:flex-end;margin-top:5px}
+.mb .mbar i{display:block;width:100%;border-radius:3px 3px 0 0;background:var(--hair)}
+.mb.plan .mbar i{background:var(--accent)}
+.mb .mk{font:600 10px var(--mono);letter-spacing:.08em;color:var(--faint);margin-top:5px;text-transform:uppercase}
+.mb.plan .mk{color:var(--accent-ink)}
+
+/* ---------- 06 mode stack ---------- */
+.stack{display:flex;height:30px;border-radius:8px;overflow:hidden;border:1px solid var(--hair);margin-top:1rem}
+.stack div{height:100%}
+.mleg{margin-top:13px;display:grid;gap:8px}
+.mleg .ml{display:flex;align-items:baseline;gap:10px;font:400 13px var(--font);color:var(--muted)}
+.mleg .ml .sw{width:13px;height:13px;border-radius:3px;flex:none;align-self:center}
+.mleg .ml b{color:var(--fg);font-weight:600;font-family:var(--mono);font-size:12.5px;margin-left:auto;font-variant-numeric:tabular-nums}
+.mleg .ml.hot{color:var(--fg)}
+.mleg .ml.hot .nm{color:var(--accent-ink);font-weight:600}
+
+/* ---------- 07 build waves ---------- */
+.wave{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:13px 0;border-bottom:1px solid var(--line);align-items:baseline}
+.wave:last-child{border-bottom:none}
+.wy{font:500 10.5px var(--mono);color:var(--faint);letter-spacing:.04em}
+.wy b{display:block;font:600 12.5px var(--mono);color:var(--fg)}
+.wc{font:600 20px/1.25 var(--font);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.wc small{font:600 12px var(--font);color:var(--muted);letter-spacing:0}
+.wc .wtag{display:inline-block;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:5px;padding:2px 6px;margin-left:9px;vertical-align:4px}
+
+/* ---------- pilot strip ---------- */
+.pilot{margin-top:1.4rem;border:1px solid var(--hair);border-top:2px solid var(--fg);border-radius:8px;background:var(--surface);padding:1.1rem 1.3rem}
+.pilot .pt{font:600 10.5px var(--mono);letter-spacing:.08em;color:var(--accent-ink);text-transform:uppercase}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+@media(min-width:640px){.pgrid.p4{grid-template-columns:repeat(4,1fr)}}
+.pgrid .pv{font:600 16px var(--font);font-variant-numeric:tabular-nums}
+.pgrid .pk{font:500 10px var(--mono);letter-spacing:.06em;color:var(--faint);margin-top:3px;text-transform:uppercase}
+
+/* ---------- tables ---------- */
+.tblwrap{border:1px solid var(--hair);border-radius:8px;background:var(--surface);padding:10px 16px 14px;margin-top:1.2rem;overflow-x:auto}
+.tblwrap h3{font:600 14.5px var(--font);letter-spacing:-.01em;padding:12px 0 2px}
+.tblwrap .why{font:400 12.5px/1.55 var(--font);color:var(--muted);margin:4px 0 8px}
+table{width:100%;border-collapse:collapse;font:400 13px var(--font);font-variant-numeric:tabular-nums}
+th{font:600 10px var(--mono);letter-spacing:.07em;color:var(--muted);text-transform:uppercase;text-align:left;padding:9px 9px;border-bottom:1px solid var(--hair);cursor:pointer;user-select:none;white-space:nowrap}
+th.no-sort{cursor:default}
+th .arw{color:var(--accent-ink);margin-left:4px}
+td{padding:8px 9px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--fg)}
+tr:last-child td{border-bottom:none}
+td.num,th.num{text-align:right;font-family:var(--mono);font-size:12.5px}
+td.dim{color:var(--muted)}
+td b{font-weight:600}
+.tblwrap .footnote{font:400 11.5px/1.6 var(--font);color:var(--muted);margin-top:10px}
+details.tbl{border:1px solid var(--hair);border-radius:8px;margin-top:1.2rem;background:var(--surface)}
+details.tbl>summary{list-style:none;cursor:pointer;padding:14px 16px;font:600 13px var(--font);display:flex;justify-content:space-between;align-items:center;gap:10px}
+details.tbl>summary::-webkit-details-marker{display:none}
+details.tbl>summary::after{content:"+";font:600 20px/1 var(--font);color:var(--accent-ink)}
+details.tbl[open]>summary::after{content:"−"}
+details.tbl .inner{padding:0 14px 12px}
+
+/* ---------- 09 risks · 10 roadmap ---------- */
+.risk{display:grid;grid-template-columns:1fr auto;gap:4px 14px;padding:13px 0;border-bottom:1px solid var(--line)}
+.risk:last-child{border-bottom:none}
+.risk .rd{font:600 14px var(--font)}
+.risk .rlev{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:5px;padding:3px 8px;align-self:center}
+.risk .rfix{grid-column:1/-1;font:400 12.5px/1.55 var(--font);color:var(--muted)}
+.rm{padding:14px 0;border-bottom:1px solid var(--line)}
+.rm:last-child{border-bottom:none}
+.rm h4{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+.rm h4 span{color:var(--faint);font-weight:500;margin-left:9px;letter-spacing:.04em}
+.rm ul{list-style:none;margin-top:9px}
+.rm li{font:400 13px/1.55 var(--font);color:var(--muted);padding:4px 0 4px 14px;position:relative}
+.rm li::before{content:"·";position:absolute;left:0;color:var(--accent-ink);font-weight:700}
+
+/* ---------- 11 method ---------- */
+.mcard{border:1px solid var(--hair);border-top:2px solid var(--fg);border-radius:8px;background:var(--surface);padding:1.1rem 1.3rem;margin-top:1.2rem;max-width:820px}
+.mcard h3{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg);margin:14px 0 8px}
+.mcard h3:first-child{margin-top:0}
+.mcard ul{list-style:none}
+.mcard li{font:400 13px/1.6 var(--font);color:var(--muted);padding:3px 0 3px 14px;position:relative}
+.mcard li::before{content:"·";position:absolute;left:0;color:var(--accent-ink);font-weight:700}
+.mcard b{color:var(--fg);font-weight:600}
+.mcard code{font:500 11.5px var(--mono);color:var(--fg)}
+
+/* ---------- view tabs (immediately below the key-metrics strip) ---------- */
+.tabbar{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:.4rem;max-width:640px}
+.tabbtn{min-height:56px;border:1px solid var(--hair);border-radius:8px;background:var(--surface);cursor:pointer;padding:9px 14px;text-align:left;transition:border-color .15s}
+.tabbtn:hover{border-color:var(--faint)}
+.tabbtn b{display:block;font:600 13.5px var(--font);letter-spacing:.02em}
+.tabbtn small{display:block;font:500 10px var(--mono);letter-spacing:.08em;color:var(--faint);margin-top:4px;text-transform:uppercase}
+.tabbtn[aria-selected="true"]{background:var(--fg);border-color:var(--fg);color:var(--bg)}
+.tabbtn[aria-selected="true"] small{color:var(--hair)}
+.tabbar+.hint{padding-top:1rem}
+
+/* ---------- counterparts view ---------- */
+.cintro{font:400 13.5px/1.65 var(--font);color:var(--muted);max-width:82ch;padding:1.4rem 0 0}
+.cintro b{color:var(--fg);font-weight:600}
+.pill3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-top:1.2rem}
+.hcol{border:1px solid var(--hair);border-top:2px solid var(--hair);border-radius:8px;background:var(--surface);padding:14px 15px}
+.hcol h4{display:flex;align-items:baseline;gap:8px;font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.hcol .cnt{margin-left:auto;font:600 10px var(--mono);letter-spacing:.06em;color:var(--faint)}
+.hcol.hpub{border-top-color:var(--accent)} .hcol.hpub h4{color:var(--accent-ink)}
+.hcol.hshr{border-top-color:var(--hair)} .hcol.hshr h4{color:var(--muted)}
+.hcol.hprv{border-top-color:var(--fg)} .hcol.hprv h4{color:var(--fg)}
+.fns{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.fn{font:500 11.5px/1.35 var(--font);border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:var(--bg);color:var(--fg)}
+.aggrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1.2rem}
+.ag{border:1px solid var(--hair);border-top:2px solid var(--fg);border-radius:8px;background:var(--surface);padding:14px 16px 15px}
+.ag.lead{border-top-color:var(--accent)}
+.ag .ah{display:flex;align-items:baseline;gap:6px 10px;flex-wrap:wrap}
+.ag .ab{font:600 14.5px var(--mono);letter-spacing:.01em}
+.ag .an{font:600 12.5px var(--font)}
+.ag .at{font:600 10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--accent-ink);background:var(--accent-soft);border-radius:5px;padding:2px 6px}
+.ag p{font:400 12.5px/1.55 var(--font);color:var(--muted);margin-top:9px}
+.ag p .k{font:600 10px var(--mono);letter-spacing:.08em;color:var(--accent-ink);margin-right:7px;text-transform:uppercase}
+.rleg{display:flex;gap:8px 16px;flex-wrap:wrap;font:600 10px var(--mono);letter-spacing:.06em;color:var(--muted);margin-top:12px;align-items:center}
+.rleg>span{display:inline-flex;align-items:center;gap:6px}
+.rl{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:6px;font:600 10.5px var(--mono);flex:none}
+.rlA{background:var(--fg);color:var(--bg)}
+.rlR{background:var(--accent);color:#fff}
+.rlC{background:var(--surface);box-shadow:inset 0 0 0 1px var(--hair);color:var(--muted)}
+.rlI{background:var(--hair);color:var(--fg)}
+.rlD{color:var(--hair)}
+td .rl{margin:1px 3px 1px 0;vertical-align:middle}
+#tRaci th{cursor:default}
+#tRaci td{text-align:center;white-space:nowrap}
+#tRaci td.f{text-align:left;min-width:240px;white-space:normal}
+#tRaci .fnm{font:600 12.5px var(--font)}
+#tRaci .fst{display:block;font:400 11.5px/1.45 var(--font);color:var(--faint);margin-top:3px;max-width:42ch}
+#tRaci .flg{font:600 10.5px var(--mono);color:var(--accent-ink);margin-left:5px}
+.cmv{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:start}
+.cmv:last-child{border-bottom:none}
+.cmv .cid{font:600 14px/1.3 var(--mono);color:var(--accent);font-variant-numeric:tabular-nums}
+.cmv .ct{font:600 13px/1.45 var(--font)}
+.cmv .cw{font:400 12.5px/1.55 var(--font);color:var(--muted);margin-top:3px}
+.cmv .cw b{color:var(--accent-ink);font:600 10px var(--mono);letter-spacing:.08em;margin-right:7px;text-transform:uppercase}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);margin-top:2.6rem;padding-block:2rem 2.8rem}
+footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
+
+/* ---------- responsive ---------- */
+@media(min-width:900px){
+  .rstats{grid-template-columns:repeat(4,1fr)}
+  .mleg{grid-template-columns:1fr 1fr;column-gap:26px}
+  .brow{grid-template-columns:150px 1fr 130px}
+}
+@media(max-width:900px){
+  .cols-m{grid-template-columns:1fr;align-items:start}
+  .masthead{padding-block:2.6rem 2rem}
+  .pill3{grid-template-columns:1fr}
+}
+@media(min-width:640px) and (max-width:900px){.kgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){
+  .kgrid{grid-template-columns:repeat(2,1fr);column-gap:1.1rem}
+  .brow{grid-template-columns:82px 1fr 92px;gap:8px}
+  .bl{font-size:10.5px}
+  .pgrid{grid-template-columns:repeat(2,1fr)}
+  .minibars{gap:6px}
+  .q li{grid-template-columns:44px 1fr;gap:10px}
+  .qn{font-size:20px}
+  .aggrid{grid-template-columns:1fr}
+}
+@media(max-width:420px){
+  .clock{display:none}
+  .brow{grid-template-columns:70px 1fr 80px;gap:7px}
+  .num .tag{display:block;margin:6px 0 0;width:max-content}
+}
+
+/* ---------- print (light theme prints as-is; accordion forced open) ---------- */
+@media print{
+  body{background:#fff}
+  .topbar{border-bottom:1px solid var(--hair)}
+  .clock,.hint,.acc-x{display:none}
+  .acc-btn{padding:.5rem 0}
+  .acc-h{break-after:avoid;break-inside:avoid}
+  .acc-body{padding-bottom:1.2rem}
+  .acc-body[hidden]{display:block!important}
+  .wrap{max-width:none;padding-inline:0}
+  .acc-btn:hover .acc-title{color:inherit}
+  .seg,.rgroup{display:none!important}
+  .rlist{display:block!important}
+  .tabbar{display:none!important}
+  a{color:var(--accent-ink)}
+  section{break-inside:auto}
+  .tile,.tblwrap,.rdetail,.mcard,.wave,.q li,.risk,.rm,.brow,.rrow,.pilot,details.tbl,.hcol,.ag,.cmv,.rleg{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+
+<!-- ================= TOP STRIP ================= -->
+<nav class="topbar" aria-label="Briefing dashboard">
+  <div class="wrap">
+    <span class="brand">Briefing dashboard<small>Timor-Leste · PT Master Plan 2024</small></span>
+    <span class="topright">
+      <a href="/">HumaFlo home</a>
+      <span class="clock" id="utcClock" title="UTC clock">--:--:-- UTC</span>
+    </span>
+  </div>
+</nav>
+
+<!-- ================= MASTHEAD ================= -->
+<header class="masthead" id="top">
+  <div class="wrap cols-m">
+    <div>
+      <p class="kicker">Timor-Leste · Transport sector briefing</p>
+      <hr class="rule">
+      <h1>Timor-Leste Public Transport Master Plan 2024</h1>
+      <p class="dek">Decision-ready. <em>90.2%</em> of it falls due by 2030. Cabinet action required on Phase 1 financing (US$17.16M), LTA legislation, and the 2026–2030 terminal delivery window.</p>
+      <p class="meta" style="margin-top:1.2rem">Source · PT Master Plan 2024 (attached) · Plan values as published — no implementation actuals · Status provisional: calendar vs plan timeline · v1.2</p>
+    </div>
+    <div>
+      <p class="giant"><span class="cur">US$</span>35.14M</p>
+      <p class="giant-cap">Indicative investment · 2023–2035 · Table 9.3</p>
+      <p class="giant-src">Phases 17.16 / 14.53 / 3.45M — reconciled to Table 9.3</p>
+    </div>
+  </div>
+  <div class="wrap kgrid">
+    <div class="tile hot">
+      <span class="lbl">Daily riders today</span>
+      <p class="num" id="kRiders">—</p>
+      <p class="ctx">by 2035 · all modes</p>
+    </div>
+    <div class="tile">
+      <span class="lbl">Planned network</span>
+      <p class="num" id="kNetwork">—</p>
+      <p class="ctx">26 routes · 13 microlet · 11 regional · 2 airport</p>
+    </div>
+    <div class="tile">
+      <span class="lbl">Build programme</span>
+      <p class="num">74</p>
+      <p class="ctx">24 facilities + 50 bus stops · T7.34–7.37</p>
+    </div>
+    <div class="tile">
+      <span class="lbl">PT share · PM peak</span>
+      <p class="num">23.7%<span class="tag">8.7% of vehicles</span></p>
+      <p class="ctx">Dili person trips · T3.4–3.5</p>
+    </div>
+  </div>
+</header>
+
+<main>
+<div class="wrap tabbar" role="tablist" aria-label="Dashboard views">
+  <button type="button" class="tabbtn" id="tab-masterplan" role="tab" aria-selected="true" aria-controls="pane-masterplan">
+    <b>Masterplan Sections</b><small>01–11 · boards &amp; drill-down</small>
+  </button>
+  <button type="button" class="tabbtn" id="tab-counterparts" role="tab" aria-selected="false" aria-controls="pane-counterparts" tabindex="-1">
+    <b>Counterparts</b><small>who does what · §3.5 · §8.3–8.4</small>
+  </button>
+</div>
+<p class="hint wrap">Sections are collapsed — tap a heading to expand</p>
+
+<div id="pane-masterplan" role="tabpanel" aria-labelledby="tab-masterplan" tabindex="0">
+
+<!-- ================= 01 ACTION QUEUE ================= -->
+<section id="actions" aria-label="Action queue">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-actions">
+        <span class="acc-no" aria-hidden="true">01</span>
+        <span><span class="acc-title">Action queue</span><span class="acc-meta">5 items · provisional</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-actions" hidden>
+      <ol class="q board" id="queue"></ol>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 02 ROUTE BOARD ================= -->
+<section id="routes" aria-label="Route board">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-routes">
+        <span class="acc-no" aria-hidden="true">02</span>
+        <span><span class="acc-title">Route board</span><span class="acc-meta">26 routes · tap a number</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-routes" hidden>
+      <div class="seg board" role="group" aria-label="Route groups">
+        <button type="button" data-g="dili" aria-pressed="true"><b>Dili</b><small>13 microlet</small></button>
+        <button type="button" data-g="regional" aria-pressed="false"><b>Regional</b><small>11 bus lines</small></button>
+        <button type="button" data-g="airport" aria-pressed="false"><b>Airport</b><small>2 express</small></button>
+      </div>
+      <div class="board" id="routeGrid"></div>
+      <div class="rdetail" id="rdetail" aria-live="polite"></div>
+      <p class="board-foot">Source IDs retained from plan route tables §6.4–6.5. Trips = round trips/day (microlet, airport express) or two-way trips/day (regional). Boardings = daily boardings, Existing survey → Upgrade 2035.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 03 MONEY ================= -->
+<section id="money" aria-label="Money board">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-money">
+        <span class="acc-no" aria-hidden="true">03</span>
+        <span><span class="acc-title">Money</span><span class="acc-meta">US$35.14M · Table 9.3</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-money" hidden>
+      <div class="legend board"><span><span class="sw f-a"></span>DUE FIRST</span><span><span class="sw f-hair"></span>LATER PHASES</span></div>
+      <div id="phaseBars"></div>
+      <div id="compBars" style="margin-top:22px"></div>
+      <div class="pilot" id="pilot"></div>
+      <p class="board-foot">Indicative plan values; excludes land acquisition and resettlement. Phases 17,160,000 / 14,530,000 / 3,450,000 — grand total <b>35,140,000</b>, reconciled to Table 9.3.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 04 RIDERS ================= -->
+<section id="riders" aria-label="Riders board">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-riders">
+        <span class="acc-no" aria-hidden="true">04</span>
+        <span><span class="acc-title">Riders</span><span class="acc-meta">daily boardings · 4 scenarios</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-riders" hidden>
+      <div id="riderRows" class="board"></div>
+      <p class="board-foot">Scenarios per plan §6.4–6.5: Existing (survey) · Immediate 2025 · <b>Upgrade 2035</b> (full recommendations) · Visionary 2035 (adds conventional bus conversion). The big step lands in the 2026–2030 terminal + timetabling window.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 CORRIDORS ================= -->
+<section id="corridors" aria-label="Corridors board">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-corridors">
+        <span class="acc-no" aria-hidden="true">05</span>
+        <span><span class="acc-title">Corridors</span><span class="acc-meta">regional trips/day</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-corridors" hidden>
+      <div class="legend board"><span><span class="sw f-line"></span>TODAY</span><span><span class="sw f-a"></span>UPGRADE 2035</span></div>
+      <div id="corrRows"></div>
+      <p class="board-foot" id="corrFoot"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 06 MODES ================= -->
+<section id="modes" aria-label="Modes board">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-modes">
+        <span class="acc-no" aria-hidden="true">06</span>
+        <span><span class="acc-title">Modes</span><span class="acc-meta">9 screenlines · PM peak</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-modes" hidden>
+      <div class="stack board" id="modeBar" role="img" aria-label="Vehicle composition at nine screenlines, weekday PM peak: motorcycles 74.8 percent, private vehicles 12.4 percent, public transport 8.7 percent, heavy freight 3.6 percent, taxi and tuk-tuk 0.5 percent of 12,029 vehicles"></div>
+      <div class="mleg" id="modeLeg"></div>
+      <p class="board-foot">12,029 vehicles, Apr–May 2023 surveys (Table 3.4). Public transport carries <b>23.7% of Dili person trips</b> in the PM peak — the motorcycle share is the mode-shift headroom the plan targets.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 07 BUILD ================= -->
+<section id="build" aria-label="Build board">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-build">
+        <span class="acc-no" aria-hidden="true">07</span>
+        <span><span class="acc-title">Build</span><span class="acc-meta">74 sites · 3 waves · T7.34–7.37</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-build" hidden>
+      <div id="waves" class="board"></div>
+      <p class="board-foot" id="buildFoot"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 08 DRILL-DOWN ================= -->
+<section id="tables" aria-label="Drill-down tables">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-tables">
+        <span class="acc-no" aria-hidden="true">08</span>
+        <span><span class="acc-title">Drill-down</span><span class="acc-meta">sortable · tap headers</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-tables" hidden>
+      <div class="tblwrap">
+        <h3>Scenario summary — Existing · Immediate 2025 · Upgrade 2035 · Visionary 2035</h3>
+        <div style="overflow-x:auto"><table id="tScenario"></table></div>
+        <p class="footnote">Totals recomputed from route-level values and reconciled with the plan's own total rows (regional trips 123/168/202/203).</p>
+      </div>
+
+      <div class="tblwrap">
+        <h3>Indicative investment plan by component and phase (US$)</h3>
+        <div style="overflow-x:auto"><table id="tInvest"></table></div>
+        <p class="footnote">Reconciles to Table 9.3: phases 17,160,000 / 14,530,000 / 3,450,000 · grand total 35,140,000. Operation covers pilot bus capex (US$9.72M) and annualised opex (US$2.99M).</p>
+      </div>
+
+      <details class="tbl">
+        <summary>Facility phasing — 24 sites + 50 Dili bus stops</summary>
+        <div class="inner"><div style="overflow-x:auto"><table id="tFac"></table></div>
+        <p class="footnote">IDs as in source Table 7.37. Short term is Dili bus stops only; medium-term terminals planned under an ADB loan; Hera flagged by MOTC (Apr 2024) as a future strategic terminal.</p></div>
+      </details>
+
+      <details class="tbl">
+        <summary>Site assessment — composite scores (top 12)</summary>
+        <div class="inner"><div style="overflow-x:auto"><table id="tSites"></table></div>
+        <p class="footnote">Composite of stakeholder, strategic, operations, environmental &amp; social and engineering criteria (Table 7.31). MOTC-strategic sites Manleuana Market, Airport Transit Hub, Becora and Baucau prioritised for the medium term.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 09 RISKS ================= -->
+<section id="risks" aria-label="Risk register">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-risks">
+        <span class="acc-no" aria-hidden="true">09</span>
+        <span><span class="acc-title">Risk register</span><span class="acc-meta">Table ES.2 · plan issues analysis</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-risks" hidden>
+      <div class="board" id="riskGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 10 ROADMAP ================= -->
+<section id="roadmap" aria-label="Reform roadmap">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-roadmap">
+        <span class="acc-no" aria-hidden="true">10</span>
+        <span><span class="acc-title">Reform roadmap</span><span class="acc-meta">3 stages · ES.11–ES.12</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-roadmap" hidden>
+      <div class="board" id="roadmapGrid"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 11 METHOD ================= -->
+<section id="method" aria-label="Method and source">
+  <div class="wrap">
+    <h2 class="acc-h">
+      <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-method">
+        <span class="acc-no" aria-hidden="true">11</span>
+        <span><span class="acc-title">Method &amp; source</span><span class="acc-meta">defensibility layer</span></span>
+        <span class="acc-x" aria-hidden="true"></span>
+      </button>
+    </h2>
+    <div class="acc-body" id="b-method" hidden>
+      <div class="mcard">
+        <h3>Build rule</h3>
+        <ul>
+          <li>Every value extracted from the attached plan and recomputed in code; route sums reconciled against the plan's own totals (regional trips <b>123/168/202/203</b>; investment <b>17.16/14.53/3.45M</b>; grand total <b>35.14M</b>) before display.</li>
+          <li>Derived figures, clearly labelled: microlet + airport express boarding sums; 90.2% and 48.8% phase shares; <b>+31.6%</b> ridership growth; <b>1,494 km</b> network (207.2 + 90.4 + 1,196.6); <b>74</b>-site count (24 facilities + 50 stops).</li>
+          <li>Scenario semantics: Existing = survey baseline · Immediate = 2025 refinements · Upgrade = 2035 full recommendations · Visionary = 2035 + conventional bus conversion.</li>
+        </ul>
+        <h3>Data lineage</h3>
+        <ul>
+          <li>Population — 2022 Census (ES.1) · Traffic/mode share — Arup screenline surveys, Apr–May 2023, weekday PM peak (T3.4–3.5).</li>
+          <li>User perception — ≈1,500 residents surveyed, Dili and Baucau (§3.4.5).</li>
+          <li>Fleet — DNTT: 906 microlets (2023), 290 regional buses (2021), 97 angguna (2021).</li>
+          <li>Routes — route-by-route surveys and modelling, §6.4–6.5 · Costs — Arup order-of-magnitude estimates (T9.1–9.3) · Sites — T7.31, 7.37.</li>
+          <li>Institutions &amp; responsibilities — §3.5.2.7 RACI (Table 3.26) · hybrid-model roles §8.3.2 · reform moves Tables 8.4–8.5 (Counterparts tab, C1–C4).</li>
+          <li><b>Freshness:</b> static 2024 plan snapshot; no implementation actuals in source — status flags are calendar-derived and provisional.</li>
+        </ul>
+        <h3>Limitations &amp; confidence</h3>
+        <ul>
+          <li>Costs are order-of-magnitude (plan's own caveat); ridership is modelled, not measured.</li>
+          <li>Known source gaps: no implementation actuals, no fare revenue data, Tasitolu interchange has no cost line, terminal sites may change per MOTC decision (note to ES.7/ES.8).</li>
+        </ul>
+        <h3>Accessibility &amp; deployment</h3>
+        <ul>
+          <li>Editorial palette per the attached brief style (paper <code>#FAF9F7</code> / ink <code>#1C1917</code> / accent <code>#C2410C</code>); meaning never relies on colour alone — every bar and state carries a printed value, label or tag.</li>
+          <li>Visible keyboard focus rings; ≥44px touch targets; live route-detail region; accordion sections expand automatically when printing.</li>
+          <li>Two view tabs directly below the key-metrics strip — <b>Masterplan Sections</b> (01–11) and <b>Counterparts</b> (C1–C4); WAI-ARIA tabs with arrow-key support; in-page evidence links switch tabs automatically; printing renders the active view.</li>
+          <li>Single self-contained HTML file — no build step, no external requests; commit as <code>index.html</code> to a GitHub Pages branch.</li>
+        </ul>
+      </div>
+
+      <details class="tbl">
+        <summary>Glossary — modes, agencies, terms</summary>
+        <div class="inner"><ul class="board-foot" style="display:grid;gap:6px;margin-top:10px">
+          <li><b>Microlet</b> — 14-seat licensed minivan; principal urban mode in Dili (906 registered, 2023).</li>
+          <li><b>Angguna</b> — medium truck with bench seating; informal first/last-mile carrier (97 registered).</li>
+          <li><b>Keliling</b> — on-street cruising for passengers instead of using terminals.</li>
+          <li><b>MOTC</b> Ministry of Transport and Communications · <b>DNTT</b> National Directorate of Land Transport · <b>LTA</b> proposed Land Transport Authority (legislation pending) · <b>MPW</b> Ministry of Public Works · <b>ADB</b> Asian Development Bank · <b>MOP</b> Ministry of Planning and Territory — ADN (National Development Agency) and MPS (Major Projects Secretariat) sit under it · <b>MOI</b> Ministry of Interior · <b>NPC</b> National Procurement Commission.</li>
+          <li><b>DED</b> — detailed engineering design (US$1.5M budget line for selected terminal designs).</li>
+          <li><b>Municipal Public Transport Hub</b> — highest-order facility combining regional bus and microlet interchange (Becora, Airport Transit Hub, Manleuana Market, Baucau).</li>
+          <li><b>Tier 1 / Tier 2 assessment</b> — the plan's two-stage site screening to a composite score out of 5.</li>
+        </ul></div>
+      </details>
+    </div>
+  </div>
+</section>
+</div><!-- /pane-masterplan -->
+
+<div id="pane-counterparts" role="tabpanel" aria-labelledby="tab-counterparts" tabindex="0" hidden>
+
+  <p class="cintro wrap">The master plan does not just build infrastructure — it assigns every function to a <b>counterpart</b>. Under the plan's <b>hybrid operating model</b> (§8.3), a strengthened public regulator plans, licenses and monitors while professionalised private operators run the services, and a third band of responsibilities is shared or negotiable case-by-case. This view maps who does what: the institutions and their current mandates (§3.5.2, Table 3.26), the public–private split of functions (§8.3.2), and the reform moves that reassign capacity over time (Tables 8.4–8.5).</p>
+
+  <!-- ================= C1 OPERATING MODEL ================= -->
+  <section id="cmodel" aria-label="Operating model">
+    <div class="wrap">
+      <h2 class="acc-h">
+        <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-cmodel">
+          <span class="acc-no" aria-hidden="true">C1</span>
+          <span><span class="acc-title">Operating model</span><span class="acc-meta">hybrid · §8.3.1–8.3.2</span></span>
+          <span class="acc-x" aria-hidden="true"></span>
+        </button>
+      </h2>
+      <div class="acc-body" id="b-cmodel" hidden>
+        <p class="board-foot" style="margin-top:0;max-width:84ch">The public sector sets policy, regulates and contracts; the private sector operates services under licence, permit or contract. What is left — vehicles, depots, facilities, information, ITS, revenue — is deliberately <b>shared or negotiable</b>, settled case-by-case as capacity grows. Delivery hinges on two strengthened counterparts: the new department inside the Land Transport Authority, and organised operator associations replacing today's individual owner-operators.</p>
+        <div class="pilot">
+          <div class="pt">The new regulator — Public Transport Planning &amp; Regulation Department</div>
+          <div class="pgrid p4">
+            <div><div class="pv">LTA</div><div class="pk">Host body · legislation pending</div></div>
+            <div><div class="pv">6 → 12–15</div><div class="pk">Professional staff when fully established</div></div>
+            <div><div class="pv">Municipal</div><div class="pk">Devolution target · regional LTA offices</div></div>
+            <div><div class="pv">Incremental</div><div class="pk">Reform pace — no “big bang”</div></div>
+          </div>
+        </div>
+        <div class="pill3">
+          <div class="hcol hpub">
+            <h4>Public sector<span class="cnt">10 functions</span></h4>
+            <div class="fns"><span class="fn">Policy &amp; strategy</span><span class="fn">Drafting &amp; enforcing regulations</span><span class="fn">Route &amp; network planning</span><span class="fn">Passenger facilities provision</span><span class="fn">Traffic management &amp; first/last-mile</span><span class="fn">Licensing &amp; contracting operators</span><span class="fn">Fares &amp; ticketing</span><span class="fn">Budgetary &amp; financial management</span><span class="fn">Convening &amp; integrating stakeholders</span><span class="fn">Monitoring &amp; outcomes</span></div>
+          </div>
+          <div class="hcol hshr">
+            <h4>Shared · negotiable<span class="cnt">6 functions</span></h4>
+            <div class="fns"><span class="fn">Vehicle procurement</span><span class="fn">Depot provision</span><span class="fn">Facility operation &amp; management</span><span class="fn">Passenger information &amp; media</span><span class="fn">Intelligent transport systems (ITS)</span><span class="fn">Revenue collection &amp; apportionment</span></div>
+          </div>
+          <div class="hcol hprv">
+            <h4>Private sector<span class="cnt">7 functions</span></h4>
+            <div class="fns"><span class="fn">Vehicle operation &amp; maintenance</span><span class="fn">Route operation</span><span class="fn">Customer service</span><span class="fn">Ticketing &amp; fare collection</span><span class="fn">Training &amp; employment of staff</span><span class="fn">Technology &amp; innovation</span><span class="fn">Environmental management</span></div>
+          </div>
+        </div>
+        <p class="board-foot">Function lists per §8.3.2 — roles and responsibilities under the hybrid model. Department sizing, devolution and the incremental reform pace per §8.3.2 and §8.4.1.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= C2 COUNTERPART ROSTER ================= -->
+  <section id="cagencies" aria-label="Counterpart roster">
+    <div class="wrap">
+      <h2 class="acc-h">
+        <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-cagencies">
+          <span class="acc-no" aria-hidden="true">C2</span>
+          <span><span class="acc-title">Counterpart roster</span><span class="acc-meta">12 institutions · §3.5.2 · Table 3.26</span></span>
+          <span class="acc-x" aria-hidden="true"></span>
+        </button>
+      </h2>
+      <div class="acc-body" id="b-cagencies" hidden>
+        <div class="aggrid">
+          <div class="ag lead">
+            <div class="ah"><span class="ab">MOTC</span><span class="an">Ministry of Transport and Communications</span><span class="at">lead ministry</span></div>
+            <p><span class="k">Today</span>Accountable across the plan's RACI for vision, route planning, licensing, fares, monitoring and facilities; hosts DNTT and oversees the port, airport and communications authorities.</p>
+            <p><span class="k">Reform</span>Policy, regulation and contracting move into the LTA's Public Transport Department; MOTC remains the sector's sponsor in Government.</p>
+          </div>
+          <div class="ag lead">
+            <div class="ah"><span class="ab">DNTT</span><span class="an">National Directorate of Land Transport</span><span class="at">under MOTC</span></div>
+            <p><span class="k">Today</span>The working regulator: routes approved case-by-case, operators licensed, vehicles inspected; keeps the vehicle-registration database — the sector's only digital system.</p>
+            <p><span class="k">Reform</span>Staff and functions seed the new Department; timetable and scheduling capacity is the first build (Moves 02, 10).</p>
+          </div>
+          <div class="ag lead">
+            <div class="ah"><span class="ab">LTA</span><span class="an">Land Transport Authority</span><span class="at">new · legislation pending</span></div>
+            <p><span class="k">Today</span>Outlined in earlier reform work, but the enabling laws have not been submitted or passed; establishment has not progressed.</p>
+            <p><span class="k">Reform</span>Hosts the Public Transport Planning &amp; Regulation Department; regional offices in municipal centres as functions devolve (Move 03).</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">MPW</span><span class="an">Ministry of Public Works</span><span class="at">infrastructure</span></div>
+            <p><span class="k">Today</span>Accountable for highway planning and delivery, and for bus-stop provision that is not delivered; roads lose quality quickly after construction.</p>
+            <p><span class="k">Reform</span>DNTT's counterpart on road improvement for inter-city reliability (Move 06); delivers modern infrastructure with maintenance programmes (Move 14).</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">MOP</span><span class="an">Ministry of Planning and Territory</span><span class="at">planning</span></div>
+            <p><span class="k">Today</span>Central planning body; responsible for highway planning alongside MPW; consulted on facility planning and design.</p>
+            <p><span class="k">Reform</span>None assigned — highway planning continues with MPW; ADN and MPS sit under MOP.</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">ADN</span><span class="an">National Development Agency (Agência de Desenvolvimento Nacional)</span><span class="at">under MOP</span></div>
+            <p><span class="k">Today</span>Consulted on facility planning, design and construction in the RACI.</p>
+            <p><span class="k">Reform</span>None assigned — consulted as the facility programme moves from planning to delivery.</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">MPS</span><span class="an">Major Projects Secretariat</span><span class="at">under MOP</span></div>
+            <p><span class="k">Today</span>Appraises major projects for the Infrastructure Fund on technical and financial grounds (Decree Law 8/2011); consulted on facility design and construction.</p>
+            <p><span class="k">Reform</span>None assigned — facility investments keep the existing appraisal route.</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">MOI</span><span class="an">Ministry of Interior</span><span class="at">enforcement</span></div>
+            <p><span class="k">Today</span>Accountable for traffic management and enforcement; the road-safety directorate (DNSR) sits under it; traffic police (PNTL) do the on-street work.</p>
+            <p><span class="k">Reform</span>Law-enforcement training and inter-agency collaboration (Move 01); keliling and over-capacity operation are the named targets.</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">NPC</span><span class="an">National Procurement Commission</span><span class="at">procurement</span></div>
+            <p><span class="k">Today</span>Accountable for supplier procurement (Decree Law 14/2011); no coordinated procurement for public transport assets has happened.</p>
+            <p><span class="k">Reform</span>Counterpart for infrastructure procurement and contract management (Move 14); vehicle-procurement capacity builds alongside (Move 13).</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">OPS</span><span class="an">Private operators — microlet + regional bus owner-operators</span><span class="at">private sector</span></div>
+            <p><span class="k">Today</span>Own, procure and operate the vehicles, collect the fares, hold maintenance responsibility without enforcement — as individuals, not companies.</p>
+            <p><span class="k">Reform</span>Professionalise into associations, absorb timetabled operations and service-quality licence conditions, then compete for contracts (Moves 05, 07–09, 12).</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">ASSOC</span><span class="an">Operator association(s)</span><span class="at">to be formed</span></div>
+            <p><span class="k">Today</span>Do not exist; flagged in earlier LTA establishment work but never progressed.</p>
+            <p><span class="k">Reform</span>The Government's single counterpart: forums first (Move 05), then collaborative governance and collective bargaining (Moves 07, 09).</p>
+          </div>
+          <div class="ag">
+            <div class="ah"><span class="ab">MUNI</span><span class="an">Municipalities — Dili first</span><span class="at">devolution target</span></div>
+            <p><span class="k">Today</span>No public transport functions in the RACI; Dili's terminals were built in the Indonesian era and have deteriorated without maintenance.</p>
+            <p><span class="k">Reform</span>Delivery and operational functions devolve over time — conditional on municipal capacity and regional LTA offices (§8.3.2).</p>
+          </div>
+        </div>
+        <p class="board-foot">Mandates condensed from §3.5.2.2 (institutional framework), Table 3.26 and §8.3.2; reform lines from Table 8.5 actions, cross-referenced as Moves to C4 below. Development partners (ADB, and others) finance and advise — the ADB window on the medium-term facilities is on the Build board.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= C3 WHO DOES WHAT TODAY · RACI ================= -->
+  <section id="craci" aria-label="Who does what today — RACI">
+    <div class="wrap">
+      <h2 class="acc-h">
+        <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-craci">
+          <span class="acc-no" aria-hidden="true">C3</span>
+          <span><span class="acc-title">Who does what today</span><span class="acc-meta">RACI · Table 3.26 · 20 functions</span></span>
+          <span class="acc-x" aria-hidden="true"></span>
+        </button>
+      </h2>
+      <div class="acc-body" id="b-craci" hidden>
+        <div class="tblwrap">
+          <h3>Responsible · Accountable · Consulted · Informed — current framework for PT functions (Table 3.26)</h3>
+          <div class="rleg" aria-label="RACI legend">
+            <span><span class="rl rlA">A</span>Accountable</span>
+            <span><span class="rl rlR">R</span>Responsible</span>
+            <span><span class="rl rlC">C</span>Consulted</span>
+            <span><span class="rl rlI">I</span>Informed</span>
+            <span><span class="rl rlD">–</span>no role printed</span>
+          </div>
+          <div style="overflow-x:auto"><table id="tRaci"></table></div>
+          <p class="footnote"><b>The plan's own verdict (§3.5.2.7):</b> MOTC — and under it DNTT — hold primary responsibility, with private operators on operational elements; MOP for planning and MPW for infrastructure/asset delivery. Bus-stop planning and delivery are split inconsistently between MOTC and MPW, and many functions are not executed in practice — the matrix shows how it should work in law, not how it always works on the street.</p>
+          <p class="footnote">† Cell resolved from the row's own status text where the printed sequence misaligns: traffic enforcement is executed by traffic police (PNTL) under MOI; MPW both accounts for and implements road projects (per §3.5.2.7). ‡ Row prints one mark more than the nine named columns in the source conversion; the trailing mark is dropped (Informed or blank in every such row). A — approves/signs off · R — does the work · C — consulted two-way · I — kept up to date.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= C4 REFORM MOVES ================= -->
+  <section id="creform" aria-label="Reform moves by counterpart">
+    <div class="wrap">
+      <h2 class="acc-h">
+        <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-creform">
+          <span class="acc-no" aria-hidden="true">C4</span>
+          <span><span class="acc-title">Reform moves</span><span class="acc-meta">15 moves · who is in the room · Tables 8.4–8.5</span></span>
+          <span class="acc-x" aria-hidden="true"></span>
+        </button>
+      </h2>
+      <div class="acc-body" id="b-creform" hidden>
+        <div class="board" id="cmoves">
+          <div class="rm">
+            <h4>SHORT TERM<span>up to 2025</span></h4>
+            <div class="cmv"><span class="cid">01</span><div><div class="ct">Enforce the laws already in place — traffic, facility use, student collection, vehicle safety</div><div class="cw"><b>Counterparts</b>Law-enforcement officials trained (1.1); transport departments, law-enforcement agencies and the judiciary collaborate (1.2); public awareness campaigns (1.3).</div></div></div>
+            <div class="cmv"><span class="cid">02</span><div><div class="ct">Introduce a basic regional bus timetable, enforced at key municipal departure points</div><div class="cw"><b>Counterparts</b>DNTT officials trained in timetable development (2.1); bus drivers and passengers consulted on schedules (2.2).</div></div></div>
+            <div class="cmv"><span class="cid">03</span><div><div class="ct">Outline and implement the Public Transport Department within the LTA</div><div class="cw"><b>Counterparts</b>Government submits and passes the LTA legislation (3.1); public transport functions detailed in the LTA Transition Plan (3.2–3.3).</div></div></div>
+            <div class="cmv"><span class="cid">04</span><div><div class="ct">Develop systems and processes for facility operations — centrepiece of institutional reform</div><div class="cw"><b>Counterparts</b>Facility operating-model actions per the plan's §7.3 table (4.1).</div></div></div>
+            <div class="cmv"><span class="cid">05</span><div><div class="ct">Facilitate operator forums toward an operator association</div><div class="cw"><b>Counterparts</b>Private operators taught the principles and functions of an association (5.1).</div></div></div>
+            <div class="cmv"><span class="cid">06</span><div><div class="ct">Engage MPW on road improvement / maintenance for inter-city reliability</div><div class="cw"><b>Counterparts</b>DNTT collaborates with MPW on road renewal programmes (6.2); operators and passengers consulted on road-quality impacts (6.1).</div></div></div>
+          </div>
+          <div class="rm">
+            <h4>MEDIUM TERM<span>2026–2030</span></h4>
+            <div class="cmv"><span class="cid">07</span><div><div class="ct">Enact collaborative governance via the operator association — stop dealing with individuals</div><div class="cw"><b>Counterparts</b>Targeted professionalisation of the operator sector (7.1); clear frameworks for roles, responsibilities and expectations of all parties (7.2).</div></div></div>
+            <div class="cmv"><span class="cid">08</span><div><div class="ct">Move beyond the licensing model — punctuality, reliability, customer-experience requirements</div><div class="cw"><b>Counterparts</b>Government skills training in PT systems (8.1); budget and staffing to monitor service quality linked to licence agreements (8.2).</div></div></div>
+            <div class="cmv"><span class="cid">09</span><div><div class="ct">Collective negotiation between the public sector and the operator association</div><div class="cw"><b>Counterparts</b>Collaborative governance and bargaining training on both sides (9.1); legally sound, enforceable agreements (9.2–9.4).</div></div></div>
+            <div class="cmv"><span class="cid">10</span><div><div class="ct">Implement timetabled services for regional and microlet routes</div><div class="cw"><b>Counterparts</b>Government scheduling and timetabling skills (10.1); passengers, operators and business owners engaged throughout (10.2).</div></div></div>
+            <div class="cmv"><span class="cid">11</span><div><div class="ct">New systems and processes across both sectors for facilities and broader functions</div><div class="cw"><b>Counterparts</b>Facility actions per §7.3 (11.1); technical capabilities developed on the public and private sides alike.</div></div></div>
+          </div>
+          <div class="rm">
+            <h4>LONG TERM<span>2031–2035</span></h4>
+            <div class="cmv"><span class="cid">12</span><div><div class="ct">Move to competitively tendered franchising / contracting, managed by the Department</div><div class="cw"><b>Counterparts</b>Franchising and contract-management training (12.1); legal framework for competitive tendering (12.2); local operators trained to bid (12.4).</div></div></div>
+            <div class="cmv"><span class="cid">13</span><div><div class="ct">Procure new public transport vehicles</div><div class="cw"><b>Counterparts</b>Procurement training for officials (13.1); technical specifications (13.2); relationships with manufacturers and suppliers (13.3); post-purchase asset management (13.4).</div></div></div>
+            <div class="cmv"><span class="cid">14</span><div><div class="ct">Implement modern infrastructure with associated maintenance programmes</div><div class="cw"><b>Counterparts</b>Infrastructure planning and maintenance training (14.1); standards adopted (14.2); NPC for procurement and contract management (14.3); preventive maintenance programmes (14.4).</div></div></div>
+            <div class="cmv"><span class="cid">15</span><div><div class="ct">Implement digital technologies for network management and optimisation</div><div class="cw"><b>Counterparts</b>Digital training for officials (15.1); technology-provider partnerships (15.2); data management capability (15.3); pilot-first rollout (15.4); cybersecurity capacity (15.5).</div></div></div>
+          </div>
+        </div>
+        <p class="board-foot">Move numbering and counterpart actions per Table 8.5; the plan flags medium- and long-term moves as contingent on earlier phases, to be revisited before implementation. Phase money behind the moves: <a href="#money">Money</a> · same stages as the <a href="#roadmap">Reform roadmap</a>.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>All information based on Transport Sector Master Plan 2024. Please refer to original document for authoritative information. Send any feedback or recommendation via form available in homepage of this Brief.</p>
+  </div>
+</footer>
+
+<script>
+/* ================= SOURCE DATA (all values from the attached "Public Transport Master Plan 2024") ================= */
+const ML = [
+  {id:"M-1",  name:"Becora Terminal circular (south)", km:14.8, rt:[240,260,260,70],    b:[6420,7200,7560,7860]},
+  {id:"M-2",  name:"Becora Terminal circular (north)", km:10.1, rt:[360,370,400,100],   b:[9720,9830,10390,10810]},
+  {id:"M-3",  name:"Manleuana Market circular",        km:16.8, rt:[340,380,470,120],   b:[11880,12430,15760,16390]},
+  {id:"M-4",  name:"Taibessi Terminal circular (north)",km:12.6,rt:[180,200,270,70],    b:[5590,5810,7200,7480]},
+  {id:"M-5",  name:"Taibessi Terminal – Manleuana Market",km:21.6,rt:[210,230,270,70],  b:[8140,8780,11700,12170]},
+  {id:"M-6",  name:"Rua do Fomento circular",          km:12.2, rt:[230,230,290,80],    b:[6200,6530,8580,8920]},
+  {id:"M-7",  name:"Taibessi Terminal – Tuana Laran",  km:15.9, rt:[140,150,170,50],    b:[5290,5500,6740,7010]},
+  {id:"M-8",  name:"Rua de Becussi circular",          km:9.5,  rt:[140,140,170,40],    b:[3760,3900,4780,4970]},
+  {id:"M-9",  name:"Kampung Baru circular",            km:22.7, rt:[370,380,500,120],   b:[10260,11210,14840,15430]},
+  {id:"M-10", name:"Tasitolu Terminal circular (east)",km:19.9, rt:[420,450,660,160],   b:[12830,13640,18730,19470]},
+  {id:"M-11", name:"Tasitolu Terminal – Manleuana Market",km:14.6,rt:[440,450,610,150], b:[11520,11990,14630,15210]},
+  {id:"M-12", name:"Rua de Cristo Rei circular",       km:15.9, rt:[150,150,160,40],    b:[2580,2610,2770,2880]},
+  {id:"M-13", name:"Kasnafar circular",                km:20.6, rt:[120,130,150,40],    b:[2910,3040,3780,3930]},
+  {id:"AE-1", name:"Airport Express #1 – Tourist Information Center",km:19.1,rt:[null,30,30,30],b:[0,220,290,290],ae:true},
+  {id:"AE-2", name:"Airport Express #2 – Metinaro",    km:71.3, rt:[null,null,20,20],   b:[0,0,60,60],ae:true}
+];
+const RB = [
+  {id:"P-1",  name:"Dili – Aileu",    km:44.3,  rt:[7,5,5,5],     b:[64,66,79,80]},
+  {id:"P-2",  name:"Dili – Ainaro",   km:109.3, rt:[2,2,2,2],     b:[31,32,39,39]},
+  {id:"P-3",  name:"Dili – Baucau",   km:117.7, rt:[22,39,51,51], b:[1218,1280,1641,1658]},
+  {id:"P-4",  name:"Dili – Ermera",   km:46.0,  rt:[13,19,21,21], b:[466,487,611,617]},
+  {id:"P-5",  name:"Dili – Liquica",  km:23.1,  rt:[48,57,70,70], b:[1969,2073,2685,2712]},
+  {id:"P-6",  name:"Dili – Lospalos", km:205.1, rt:[4,7,7,7],     b:[153,156,172,174]},
+  {id:"P-7",  name:"Dili – Maliana",  km:132.7, rt:[6,6,8,8],     b:[302,316,394,398]},
+  {id:"P-8",  name:"Dili – Manatuto", km:58.7,  rt:[6,6,6,6],     b:[126,132,165,167]},
+  {id:"P-9",  name:"Dili – Same",     km:112.1, rt:[4,4,6,6],     b:[141,147,185,186]},
+  {id:"P-10", name:"Dili – Suai",     km:171.0, rt:[7,10,10,11],  b:[290,299,349,352]},
+  {id:"P-11", name:"Dili – Viqueque", km:176.6, rt:[4,13,16,16],  b:[377,392,480,484]}
+];
+const INV = [
+  {c:"Operation (Dili pilot bus: capex + annualised opex)", p:[12710000,0,0]},
+  {c:"Facility (4 hubs, 20 interchanges, 50 bus stops)",    p:[1850000,11680000,1800000]},
+  {c:"Institutional (regulatory and reform support)",       p:[0,250000,250000]},
+  {c:"Capacity building (public and private sector)",       p:[600000,600000,900000]},
+  {c:"Detailed engineering design (DED)",                   p:[1500000,0,0]},
+  {c:"Technical studies (7 studies incl. fares & ticketing)",p:[500000,2000000,0]},
+  {c:"Safeguard monitoring",                                p:[0,0,500000]}
+];
+const PHASE_TOT = INV.reduce((a,r)=>[a[0]+r.p[0],a[1]+r.p[1],a[2]+r.p[2]],[0,0,0]); // 17,160,000 / 14,530,000 / 3,450,000
+const GRAND = PHASE_TOT.reduce((a,b)=>a+b,0); // 35,140,000
+
+const FAC = [
+  {id:1, type:"Bus stop", loc:"Dili", name:"Dili Bus Stops (50)", ph:1},
+  {id:2, type:"Interchange", loc:"Dili – Central", name:"Dili Convention Center", ph:2},
+  {id:3, type:"Terminal (Hub)", loc:"Dili – East", name:"Becora Terminal", ph:2},
+  {id:4, type:"Terminal (Hub)", loc:"Dili – West", name:"Airport Transit Hub", ph:2},
+  {id:6, type:"Terminal (Hub)", loc:"Dili – South", name:"Manleuana Market", ph:2},
+  {id:7, type:"Terminal (Hub)", loc:"Baucau", name:"Aldeia Samalakuliba, Baucau", ph:2},
+  {id:8, type:"Interchange (layover)", loc:"Maliana", name:"Maliana", ph:3},
+  {id:9, type:"Interchange (layover)", loc:"Suai", name:"Suai Market", ph:3},
+  {id:10,type:"Interchange (layover)", loc:"Lospalos", name:"Lospalos Bemoris", ph:3},
+  {id:11,type:"Interchange (layover)", loc:"Viqueque", name:"Viqueque City Center", ph:3},
+  {id:12,type:"Interchange", loc:"Dili – Central", name:"Dili Port Interchange", ph:3},
+  {id:13,type:"Interchange", loc:"Dili – West", name:"Ulmera", ph:3},
+  {id:14,type:"Interchange", loc:"Dili – West", name:"Tibar", ph:3},
+  {id:15,type:"Interchange", loc:"Dili – East", name:"Hera (future terminal per MOTC)", ph:3},
+  {id:16,type:"Interchange", loc:"Dili – East", name:"Wenunuc", ph:3},
+  {id:17,type:"Interchange", loc:"Dili – East", name:"Metinaro", ph:3},
+  {id:18,type:"Interchange (layover)", loc:"Aileu", name:"Aileu – Plot 1", ph:3},
+  {id:19,type:"Interchange (layover)", loc:"Maubisse", name:"Maubisse – Plot 1", ph:3},
+  {id:20,type:"Interchange (layover)", loc:"Manatuto", name:"Manatuto – Plot 1", ph:3},
+  {id:21,type:"Interchange (layover)", loc:"Same", name:"Same – Plot 1", ph:3},
+  {id:22,type:"Interchange (layover)", loc:"Ainaro", name:"Ainaro – Plot 2", ph:3},
+  {id:23,type:"Interchange (layover)", loc:"Liquica", name:"Liquica – Plot 1", ph:3},
+  {id:24,type:"Interchange", loc:"Batugade", name:"Batugade – Plot 1", ph:3},
+  {id:25,type:"Interchange (layover)", loc:"Ermera", name:"Ermera", ph:3}
+];
+const SITES = [
+  ["Manleuana Market (Dili South)",3.7,"MOTC priority — medium term"],
+  ["Dili Convention Center (Central)",3.7,"Medium term"],
+  ["Dili Port Interchange (Central)",3.6,"Long term"],
+  ["Maubisse – Plot 2",3.5,"Long term"],
+  ["Viqueque City Center",3.5,"Long term"],
+  ["Airport Transit Hub (Dili West)",3.4,"MOTC priority — medium term"],
+  ["Ermera Bus Stop",3.4,"Long term"],
+  ["Suai Market",3.4,"Long term"],
+  ["Batugade – Plot 1",3.4,"Long term"],
+  ["Hera (Dili East)",3.3,"MOTC strategic — phased toward hub"],
+  ["Taibessi Terminal (Dili South)",3.2,"Absorbed by Manleuana hub programme"],
+  ["Becora Terminal (Dili East)",3.1,"MOTC priority — medium term"]
+];
+const RISKS = [
+  ["Growth & Development","Population heads to 1.48M by 2030 (Dili 833k per plan text) on an informal, unscheduled network; private/motorcycle growth crowds out transit.","Restructured 26-route network; Dili pilot bus (US$9.72M capex); mode-shift service quality agenda.","HIGH"],
+  ["Network & Connectivity","Dili-centred radial network; single regional trips take hours; weak east-west integration.","Refined regional routes (1,196.6 km); MPW road improvement coordination; hub-and-interchange hierarchy.","HIGH"],
+  ["Level of Service","No schedules (drivers wait until full), overcrowding, 6AM–6PM span, unsafe driving; ~50% of users cite scheduling as top improvement.","Regional bus timetable in short term; full timetabling and service-quality licensing conditions in medium term.","HIGH"],
+  ["Infrastructure","Terminals built in the Indonesian era deteriorated without maintenance; no amenities, access-for-all gaps, climate/flood exposure.","US$15.33M facility programme; design guidelines; five strategic siting principles incl. climate resilience.","HIGH"],
+  ["Institutional & Legal","Unclear legal framework; DNTT under-resourced with limited PT expertise; informal operator incentives; LTA legislation not yet passed.","Three-stage incremental reform; PT Department within LTA; operator association; US$2.1M capacity building.","HIGH"]
+];
+const ROADMAP = [
+  {h:"Short term", y:"Up to 2025", li:["Enforce existing traffic and facility laws","Introduce a basic regional bus timetable","Establish the PT Department within the LTA (Transition Plan)","Develop facility operations systems and processes","Facilitate operator forums toward an association","Coordinate road improvement with MPW"]},
+  {h:"Medium term", y:"2026–2030", li:["Professionalise the operator sector","Collaborative governance via the operator association","Service-quality requirements beyond licensing","Collective negotiation public ↔ operator association","Timetabled services for regional and urban routes","New systems and processes across both sectors"]},
+  {h:"Long term", y:"2031–2035", li:["Competitively tendered franchising / contracting model","Procure new public transport vehicles","Modern infrastructure and maintenance programmes","Digital technologies for network management","Customer charter"]}
+];
+const DECISIONS = [
+  {n:"DQ-1", t:"Approve the Phase 1 financing envelope (US$17.16M, incl. US$12.71M pilot bus capex + opex)", o:"MOTC / Ministry of Finance", d:"Within Phase 1 window (by 2025)", e:"#tblInvest · Chart 1", c:"Pilot bus and 50 bus stops slip a full cycle; terminal design pipeline stalls."},
+  {n:"DQ-2", t:"Pass the Land Transport Authority legislation", o:"Council of Ministers", d:"Short-term window (plan §8.4.1)", e:"Risk register · Roadmap", c:"No regulatory anchor for timetabling, franchising or facility operations."},
+  {n:"DQ-3", t:"Approve detailed engineering design (US$1.5M) for selected terminals", o:"MOTC", d:"Phase 1", e:"Chart 6 · Facility table", c:"Becora, Airport Transit Hub and Manleuana cannot start in the 2026 ADB window."},
+  {n:"DQ-4", t:"Confirm ADB loan preparation for medium-term facilities (US$11.68M)", o:"MOTC / MPW / ADB", d:"Ready by 2026", e:"Chart 5 · Chart 6", c:"The 90.2%-by-2030 schedule is missed; +25,120 daily boardings case is at risk."},
+  {n:"DQ-5", t:"Introduce and enforce the basic regional bus timetable", o:"DNTT", d:"Phase 1 (plan key move 2)", e:"Route table · Scenario table", c:"Scheduling — the top user demand (~50% of survey mentions) — stays unaddressed."}
+];
+const PILOT = [
+  ["Corridor (roundtrip)","25.3 km"],["Vehicles (incl. 10% spares)","21"],["Bus stops @ 400 m","64"],
+  ["Capex","US$9.72M"],["Annualised opex","US$2.99M"],["Max trips / hour (weekday)","12"]
+];
+const POP = [ ["2015",1200379],["2020",1299412],["2025",1391221],["2030",1483947],["2035",1578959],["2040",1674121],["2045",1766252],["2050",1854520] ];
+
+/* ---------- Counterparts view · RACI matrix — Table 3.26 (§3.5.2.7) ----------
+   Cells as printed in the source conversion; "–" = no mark printed.
+   Flags: † = a cell resolved from the row's own status text where the printed
+   sequence misaligns · ‡ = row prints one mark more than the nine named columns
+   (trailing mark dropped; it is Informed or blank in every such row). */
+const RACI_COLS = ["MOTC","DNTT","MPW","MOP","ADN","MPS","MOI","NPC","OPS"];
+const RACI = [
+ ["Vision & strategy","No standalone PT vision or strategy; mentioned across strategic documents.","","A","R","C","C","C","C","C","I","I"],
+ ["Route planning","Routes assessed case-by-case by the DNTT director; low network-planning capability.","","A","R","I","I","–","–","C","–","C"],
+ ["Operator licensing","Licensing exists; conditions limited, no performance specifications.","","A","R","–","–","–","–","–","–","C"],
+ ["Route operation","DNTT defines routes for operators; limited enforcement of route operation.","","A","A","–","–","–","–","–","–","R"],
+ ["Fare collection","Operators collect fares; structure set by MOTC/DNTT with no monitoring.","","A","A","–","–","–","–","–","–","R"],
+ ["Vehicle safety","DNTT inspects vehicles; many are old, mechanically unsafe, operated unsafely.","","A","A","–","–","–","–","–","–","R"],
+ ["Vehicle maintenance","Operators responsible via licensing inspections; limited enforcement.","","A","A","–","–","–","–","–","–","R"],
+ ["Traffic management & enforcement","DNTT collaborates with MOI and traffic police; focused on congestion, sometimes facilities.","†","I","C","–","–","–","–","A·R","–","I"],
+ ["Monitoring & outcomes","No formal model for monitoring and evaluating network outcomes.","","A","R","–","C","–","–","–","–","C"],
+ ["Vehicle procurement","Operators procure, own and operate vehicles; MOTC/DNTT set licensing requirements.","","C","C","–","–","–","–","–","I","R"],
+ ["Facility planning","MOTC/DNTT responsible; no planning of new facilities undertaken.","","A","R","C","C","I","I","–","I","I"],
+ ["Facility design & construction","No public transport facility design or delivery experience.","","A","R","R","C","C","C","–","I","C"],
+ ["Facility operation & management","Minimal operational management applied to facilities.","","A","R","I","I","I","–","–","–","I"],
+ ["Highway planning","MPW plans roads with MOP, consulting MOTC.","‡","C","C","A","R","C","I","I","–","I"],
+ ["Highway infrastructure provision","MPW implements road projects; some lose quality soon after construction.","†‡","C","C","A·R","R","C","–","–","–","I"],
+ ["Highway infrastructure maintenance","MPW focuses on roads; PT infrastructure unmaintained in practice.","","A","R","R","C","I","C","–","–","I"],
+ ["Bus stop planning","Minimal planning; no prioritisation process; not done in practice.","","A","R","C","C","–","–","–","I","C"],
+ ["Bus stop provision","New bus stop infrastructure is not delivered.","‡","C","C","A","R","I","C","C","–","I"],
+ ["Bus stop maintenance","Bus stops are not maintained.","","C","R","R","C","–","–","–","–","C"],
+ ["Supplier procurement","No coordinated procurement for public transport assets.","‡","C","C","C","C","C","C","–","A","R"]
+];
+</script>
+
+<script>
+/* ================= RENDER · briefing boards ================= */
+const $ = (id) => document.getElementById(id);
+const fmtN = (n) => n.toLocaleString("en-US");
+const fmtM = (n) => (n / 1e6).toFixed(2);
+const pct = (a, b) => (a / b * 100).toFixed(1) + "%";
+const kFmt = (n) => (n / 1000).toFixed(1).replace(/\.0$/, "") + "K";
+
+/* ---------- accordion (01–11 collapsed by default; expanded state on the button) ---------- */
+function setAcc(btn, open) {
+  btn.setAttribute("aria-expanded", String(open));
+  document.getElementById(btn.getAttribute("aria-controls")).hidden = !open;
+}
+const accBtns = () => [...document.querySelectorAll(".acc-btn")];
+accBtns().forEach(btn => btn.addEventListener("click", () => {
+  setAcc(btn, btn.getAttribute("aria-expanded") !== "true");
+}));
+let accState = null;
+window.addEventListener("beforeprint", () => {
+  accState = accBtns().map(b => b.getAttribute("aria-expanded") === "true");
+  accBtns().forEach(b => setAcc(b, true));
+  document.querySelectorAll("details.tbl").forEach(d => d.open = true);
+});
+window.addEventListener("afterprint", () => {
+  if (!accState) return;
+  accBtns().forEach((b, i) => setAcc(b, accState[i]));
+  accState = null;
+});
+/* ---------- view tabs (immediately below the key-metrics strip) ---------- */
+const TABS = [
+  { btn: $("tab-masterplan"), pane: $("pane-masterplan") },
+  { btn: $("tab-counterparts"), pane: $("pane-counterparts") }
+];
+function setTab(i, focus) {
+  TABS.forEach((t, j) => {
+    const on = i === j;
+    t.btn.setAttribute("aria-selected", String(on));
+    t.btn.tabIndex = on ? 0 : -1;
+    t.pane.hidden = !on;
+  });
+  if (focus) TABS[i].btn.focus();
+}
+TABS.forEach((t, i) => {
+  t.btn.addEventListener("click", () => setTab(i));
+  t.btn.addEventListener("keydown", (ev) => {
+    if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+    ev.preventDefault();
+    setTab((i + (ev.key === "ArrowRight" ? 1 : TABS.length - 1)) % TABS.length, true);
+  });
+});
+/* evidence links open their target section — switching view tabs when the
+   target lives in the other pane */
+document.addEventListener("click", (ev) => {
+  const a = ev.target.closest('a[href^="#"]');
+  if (!a) return;
+  const sec = document.querySelector(a.getAttribute("href"));
+  if (!sec) return;
+  const pane = sec.closest('[role="tabpanel"]');
+  if (pane && pane.hidden) setTab(TABS.findIndex(t => t.pane === pane));
+  const btn = sec.querySelector('.acc-btn[aria-expanded="false"]');
+  if (btn) btn.click();
+});
+
+/* ---------- derived totals (recomputed in code — Gate G5) ---------- */
+const sum = (arr, f) => arr.reduce((a, r) => a + f(r), 0);
+const mlB = [0,1,2,3].map(i => sum(ML.filter(r=>!r.ae), r => r.b[i])); // 97,100 / 102,470 / 127,460 / 132,530 (13 microlet routes only)
+const aeB = [0,1,2,3].map(i => sum(ML.filter(r=>r.ae), r => r.b[i])); // 0 / 220 / 350 / 350
+const mlRt = [0,1,2,3].map(i => sum(ML.filter(r=>!r.ae), r => r.rt[i] ?? 0));
+const aeRt = [0,1,2,3].map(i => sum(ML.filter(r=>r.ae), r => r.rt[i] ?? 0));
+const rbT = [0,1,2,3].map(i => sum(RB, r => r.rt[i]));                // 123 / 168 / 202 / 203
+const rbB = [0,1,2,3].map(i => sum(RB, r => r.b[i]));                 // 5,137 / 5,380 / 6,800 / 6,867
+const mlAeB = [0,1,2,3].map(i => mlB[i] + aeB[i]);                    // 97,100 / 102,690 / 127,810 / 132,880
+const netKm = sum(ML, r => r.km) + sum(RB, r => r.km);                // 1,494
+const p12Share = pct(PHASE_TOT[0] + PHASE_TOT[1], GRAND);             // 90.2%
+const p1Share = pct(PHASE_TOT[0], GRAND);                             // 48.8%
+const riderGrow = "+" + ((mlAeB[2] / mlAeB[0] - 1) * 100).toFixed(1) + "%"; // +31.6%
+const regGrow = "+" + ((rbB[2] / rbB[0] - 1) * 100).toFixed(1) + "%";
+const hubSum = 3.8 + 3.0 + 2.9 + 1.3;                                 // 11.0 (investment-plan values)
+
+/* ---------- KPI strip ---------- */
+$("kRiders").innerHTML = `${kFmt(mlAeB[0])}<span class="arr"> → </span>${kFmt(mlAeB[2])}<span class="tag">${riderGrow} BY 2035</span>`;
+$("kNetwork").innerHTML = `${fmtN(Math.round(netKm))}<span class="u"> km</span>`;
+
+/* ---------- 01 action queue ---------- */
+const EV = { "#tblInvest": ["#tables", "investment table"], "Chart 1": ["#money", "money board"], "Chart 5": ["#build", "build board"], "Chart 6": ["#money", "money board"],
+  "Route table": ["#routes", "route board"], "Scenario table": ["#tables", "scenario table"],
+  "Facility table": ["#tables", "facility table"], "Risk register": ["#risks", "risk register"], "Roadmap": ["#roadmap", "roadmap"] };
+$("queue").innerHTML = DECISIONS.map((d, i) => {
+  const first = d.e.split(" · ")[0];
+  const link = EV[first] || ["#tables", first];
+  return `<li>
+    <span class="qn" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span>
+    <div>
+      <div class="qt">${d.t}</div>
+      <div class="qm">${d.n} · owner ${d.o} · due ${d.d} · <a href="${link[0]}">${link[1]}</a></div>
+      <div class="qc"><b>IF LAPSED</b>${d.c}</div>
+    </div>
+  </li>`;
+}).join("");
+
+/* ---------- 02 route board ---------- */
+const GROUPS = {
+  dili:    { label: "Dili microlet", routes: ML.filter(r => !r.ae) },
+  regional:{ label: "Regional bus",  routes: RB },
+  airport: { label: "Airport express", routes: ML.filter(r => r.ae) }
+};
+const rState = { g: "dili", id: GROUPS.dili.routes[0].id };
+
+$("routeGrid").innerHTML = Object.entries(GROUPS).map(([g, cfg]) => `
+  <div class="rgroup on" data-g="${g}">
+    ${cfg.routes.map(r => `
+      <button type="button" class="rchip" data-g="${g}" data-id="${r.id}" aria-pressed="${r.id === rState.id}">
+        <span class="no">${String(r.id.split("-").pop()).padStart(2, "0")}</span>
+        <span class="meta">${r.id} · ${r.km.toFixed(1)} KM</span>
+      </button>`).join("")}
+  </div>`).join("") +
+  Object.entries(GROUPS).map(([g, cfg]) => `
+  <div class="rlist" data-g="${g}">
+    <b>${cfg.label.toUpperCase()} · ${cfg.routes.length} ROUTES</b>
+    <ul>${cfg.routes.map(r => `<li>${r.id} — ${r.name} · ${r.km.toFixed(1)} km</li>`).join("")}</ul>
+  </div>`).join("");
+
+function routeDetail(id) {
+  const g = rState.g, cfg = GROUPS[g];
+  const r = cfg.routes.find(x => x.id === id);
+  const trips = r.rt[0] === null ? (r.rt[2] === null ? "—" : `new · ${r.rt[2]}`) : `${fmtN(r.rt[0])} <span class="arr">→</span> ${fmtN(r.rt[2])}`;
+  const rides = r.b[0] === 0 ? `new · ${fmtN(r.b[2])}` : `${fmtN(r.b[0])} <span class="arr">→</span> ${fmtN(r.b[2])}`;
+  const grow = r.b[0] === 0 ? "NEW" : "+" + ((r.b[2] / r.b[0] - 1) * 100).toFixed(0) + "%";
+  const tripsK = g === "regional" ? "Trips/day · 2-way" : "Trips/day";
+  return `<span class="rtag">${cfg.label} · ${r.id}</span>
+    <h3>${r.name}</h3>
+    <div class="rstats">
+      <div class="rstat"><div class="k">${tripsK}</div><div class="v">${trips}</div></div>
+      <div class="rstat"><div class="k">Riders/day</div><div class="v">${rides}</div></div>
+      <div class="rstat"><div class="k">Growth 2035</div><div class="v">${grow}</div></div>
+      <div class="rstat"><div class="k">Length</div><div class="v">${r.km.toFixed(1)}<span class="arr"> km</span></div></div>
+    </div>`;
+}
+function paintChips() {
+  document.querySelectorAll("#routeGrid .rgroup").forEach(el => {
+    el.classList.toggle("on", el.dataset.g === rState.g);
+  });
+  document.querySelectorAll("#routeGrid .rchip").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.g === rState.g && b.dataset.id === rState.id));
+  });
+  $("rdetail").innerHTML = routeDetail(rState.id);
+}
+document.querySelectorAll(".seg button").forEach(b => b.addEventListener("click", () => {
+  rState.g = b.dataset.g;
+  if (!GROUPS[rState.g].routes.some(r => r.id === rState.id)) rState.id = GROUPS[rState.g].routes[0].id;
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  paintChips();
+}));
+document.querySelectorAll("#routeGrid .rchip").forEach(b => b.addEventListener("click", () => {
+  rState.g = b.dataset.g; rState.id = b.dataset.id; paintChips();
+}));
+paintChips();
+
+/* ---------- 03 money ---------- */
+const phaseSub = [["P1", "2023–25", 0], ["P2", "2026–30", 1], ["P3", "2031–35", 2]];
+$("phaseBars").innerHTML = phaseSub.map(([lab, yr, i], k) => `
+  <div class="brow">
+    <span class="bl"><b>${lab}</b><span class="yr">${yr}</span>${k === 0 ? '<span class="firsttag">DUE FIRST</span>' : ""}</span>
+    <span class="bar"><i class="${k === 0 ? "f-a" : k === 1 ? "f-hair" : "f-line"}" style="width:${pct(PHASE_TOT[i], GRAND)}"></i></span>
+    <span class="bv">US$${fmtM(PHASE_TOT[i])}M<small>${pct(PHASE_TOT[i], GRAND)}</small></span>
+  </div>`).join("");
+
+const compShort = { "Operation": "OPERATION", "Facility": "FACILITY", "Institutional": "INSTITUTIONAL",
+  "Capacity building": "CAPACITY", "Detailed engineering design": "DESIGN · DED",
+  "Technical studies": "STUDIES", "Safeguard monitoring": "SAFEGUARDS" };
+const comps = INV.map(r => ({ c: compShort[r.c.split(" (")[0]] || r.c, t: r.p[0] + r.p[1] + r.p[2] })).sort((a, b) => b.t - a.t);
+$("compBars").innerHTML = `<div class="legend"><span><span class="sw f-hair"></span>TOP COMPONENTS</span><span><span class="sw f-line"></span>REMAINDER</span></div>` +
+  comps.map((r, i) => `
+  <div class="brow">
+    <span class="bl" style="font-size:10.5px">${r.c}</span>
+    <span class="bar"><i class="${i === 0 ? "f-hair" : i === 1 ? "f-hair" : "f-line"}" style="width:${pct(r.t, GRAND)}"></i></span>
+    <span class="bv">US$${fmtM(r.t)}M<small>${pct(r.t, GRAND)}</small></span>
+  </div>`).join("");
+
+$("pilot").innerHTML = `<div class="pt">Dili pilot bus — ${pct(12710000, GRAND)} of the programme</div>
+  <div class="pgrid">${PILOT.map(([k, v]) => `<div><div class="pv">${v}</div><div class="pk">${k}</div></div>`).join("")}</div>`;
+
+/* ---------- 04 riders ---------- */
+const SCN = ["TODAY", "2025", "2035", "2035V"];
+function riderRow(name, vals, delta) {
+  const max = Math.max(...vals);
+  return `<div class="rrow">
+    <div class="rh"><b>${name}</b><span class="delta">${delta} <span>by 2035</span></span></div>
+    <div class="minibars">${vals.map((v, i) => `
+      <div class="mb ${i === 2 ? "plan" : ""}">
+        <div class="mv">${kFmt(v)}</div>
+        <div class="mbar"><i style="height:${Math.max(10, Math.round(v / max * 40))}px"></i></div>
+        <div class="mk">${SCN[i]}</div>
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+$("riderRows").innerHTML =
+  riderRow("Dili microlet + airport express", mlAeB, riderGrow) +
+  riderRow("Regional bus", rbB, regGrow);
+
+/* ---------- 05 corridors ---------- */
+const corr = RB.map(r => ({ n: r.name.replace("Dili – ", ""), e: r.rt[0], u: r.rt[2] })).sort((a, b) => b.u - a.u).slice(0, 6);
+const cMax = Math.max(...corr.map(r => r.u));
+$("corrRows").innerHTML = corr.map(r => `
+  <div class="brow">
+    <span class="bl"><b>${r.n}</b></span>
+    <span style="display:grid;gap:3px">
+      <span class="bar" style="height:8px"><i class="f-line" style="width:${r.e / cMax * 100}%"></i></span>
+      <span class="bar" style="height:8px"><i class="f-a" style="width:${r.u / cMax * 100}%"></i></span>
+    </span>
+    <span class="bv">${r.e} <span class="arr" style="color:var(--accent-ink)">→</span> ${r.u}<small>trips/day</small></span>
+  </div>`).join("");
+const gL = RB[4].rt[2] - RB[4].rt[0], gB = RB[2].rt[2] - RB[2].rt[0], gT = rbT[2] - rbT[0];
+$("corrFoot").innerHTML = `Network: <b>${rbT[0]} → ${rbT[2]} trips/day</b> (+${((rbT[2]/rbT[0]-1)*100).toFixed(0)}%). Liquica (+${gL}) and Baucau (+${gB}) contribute ${Math.round((gL+gB)/gT*100)}% of the +${gT} growth.`;
+
+/* ---------- 06 modes ---------- */
+const MODES = [
+  { n: "Motorcycle", v: 74.8, c: "f-hair" },
+  { n: "Private vehicle", v: 12.4, c: "f-line" },
+  { n: "Public transport (microlet + bus + angguna)", v: 8.7, c: "f-a", hot: true },
+  { n: "Heavy freight", v: 3.6, c: "f-soft" },
+  { n: "Taxi + tuk-tuk", v: 0.5, c: "f-surface" }
+];
+$("modeBar").innerHTML = MODES.map(m => `<div class="${m.c}" style="width:${m.v}%" title="${m.n} ${m.v}%"></div>`).join("");
+$("modeLeg").innerHTML = MODES.map(m => `
+  <div class="ml ${m.hot ? "hot" : ""}"><span class="sw ${m.c}"></span><span class="nm">${m.n}</span><b>${m.v}%</b></div>`).join("");
+
+/* ---------- 07 build ---------- */
+const WAVES = [
+  { y: "2023–25", w: "1", c: `50 <small>BUS STOPS</small>`, tag: "" },
+  { y: "2026–30", w: "2", c: `4 <small>HUBS + CONVENTION CENTRE INTERCHANGE</small>`, tag: "ADB WINDOW" },
+  { y: "2031–35", w: "3", c: `20 <small>INTERCHANGES</small>`, tag: "" }
+];
+$("waves").innerHTML = WAVES.map(w => `
+  <div class="wave">
+    <span class="wy"><b>WAVE ${w.w}</b>${w.y}</span>
+    <span class="wc">${w.c}${w.tag ? `<span class="wtag">${w.tag}</span>` : ""}</span>
+  </div>`).join("");
+$("buildFoot").innerHTML = `The four hubs — Airport 3.8 · Becora 3.0 · Manleuana 2.9 · Baucau 1.3 — absorb <b>US$${hubSum.toFixed(1)}M</b>, ${pct(hubSum * 1e6, 11680000)} of the US$11.68M medium-term facility budget.`;
+
+/* ---------- 08 tables ---------- */
+function sortTable(tableId, data, cols, opts) {
+  const o = opts || {};
+  const state = { key: null, dir: 1 };
+  function render() {
+    const t = $(tableId);
+    const pinned = o.pinLast ? data.slice(-1) : [];
+    const body = o.pinLast ? data.slice(0, -1) : data;
+    const sorted = (state.key === null ? body : [...body].sort((a, b) => {
+      const va = a[state.key], vb = b[state.key];
+      if (va === null) return 1; if (vb === null) return -1;
+      return (typeof va === "string" ? String(va).localeCompare(String(vb)) : va - vb) * state.dir;
+    })).concat(pinned);
+    t.innerHTML = "<thead><tr>" + cols.map((c, i) =>
+      `<th class="${c.num ? 'num' : ''} ${c.noSort ? 'no-sort' : ''}" data-i="${i}">${c.h}<span class="arw">${state.key === i ? (state.dir > 0 ? "▲" : "▼") : ""}</span></th>`).join("") + "</tr></thead><tbody>" +
+      sorted.map(r => "<tr>" + cols.map((c, i) => `<td class="${c.num ? 'num' : ''} ${c.cls ? c.cls(r[i]) : ''}">${c.f ? c.f(r[i]) : (r[i] === null ? "—" : r[i])}</td>`).join("") + "</tr>").join("") + "</tbody>";
+    t.querySelectorAll("th").forEach(th => th.addEventListener("click", () => {
+      const i = +th.dataset.i;
+      if (state.key === i) state.dir *= -1; else { state.key = i; state.dir = 1; }
+      render();
+    }));
+  }
+  render();
+}
+
+sortTable("tScenario", [
+  ["Dili microlet — round trips/day (13 routes)", ...mlRt],
+  ["Airport express — round trips/day (2 routes)", ...aeRt],
+  ["Dili microlet — daily boardings", ...mlB],
+  ["Airport express — daily boardings", ...aeB],
+  ["Regional bus — trips/day (both directions, 11 routes)", ...rbT],
+  ["Regional bus — daily boardings", ...rbB],
+  ["Total PT boardings/day (all modes)", ...totB(mlAeB, rbB)]
+], [
+  { h: "Indicator", noSort: true },
+  { h: "Existing (survey)", num: true, f: v => v === 0 ? "—" : fmtN(v) },
+  { h: "Immediate 2025", num: true, f: v => v === 0 ? "—" : fmtN(v) },
+  { h: "Upgrade 2035", num: true, f: fmtN },
+  { h: "Visionary 2035", num: true, f: fmtN }
+]);
+
+function totB(mlAe, rb) { return [0,1,2,3].map(i => mlAe[i] + rb[i]); }
+
+sortTable("tInvest", INV.map(r => {
+  const t = r.p[0] + r.p[1] + r.p[2];
+  return [r.c, r.p[0], r.p[1], r.p[2], t, t / GRAND * 100];
+}).concat([["Total", ...PHASE_TOT, GRAND, 100.0]]), [
+  { h: "Component", noSort: true },
+  { h: "Phase 1 · 2023–25", num: true, f: fmtN },
+  { h: "Phase 2 · 2026–30", num: true, f: fmtN },
+  { h: "Phase 3 · 2031–35", num: true, f: fmtN },
+  { h: "Total (US$)", num: true, f: v => `<b>${fmtN(v)}</b>` },
+  { h: "% of total", num: true, f: v => v.toFixed(1) + "%" }
+], { pinLast: true });
+
+sortTable("tFac", FAC.map(f => [f.id, f.type, f.loc, f.name, f.ph]), [
+  { h: "ID", num: true },
+  { h: "Facility type" },
+  { h: "Location" },
+  { h: "Name" },
+  { h: "Phase", num: true, f: v => v === 1 ? "P1 · 2023–25" : v === 2 ? "P2 · 2026–30" : "P3 · 2031–35" }
+]);
+
+sortTable("tSites", SITES.map(s => [s[0], s[1].toFixed(1), s[2]]), [
+  { h: "Site" },
+  { h: "Score (of 5)", num: true },
+  { h: "Programme status (per plan)" }
+]);
+
+/* ---------- C3 who does what today — RACI matrix (Table 3.26) ---------- */
+const RLC = { A: "rlA", R: "rlR", C: "rlC", I: "rlI" };
+function raciChip(v) {
+  if (v === "–") return '<span class="rl rlD">–</span>';
+  if (v === "A·R") return '<span class="rl rlA">A</span><span class="rl rlR">R</span>';
+  return `<span class="rl ${RLC[v]}">${v}</span>`;
+}
+$("tRaci").innerHTML = "<thead><tr><th class=\"no-sort\">Function · status today</th>" +
+  RACI_COLS.map(c => `<th class="no-sort">${c}</th>`).join("") + "</tr></thead><tbody>" +
+  RACI.map(r => `<tr><td class="f"><span class="fnm">${r[0]}${r[2] ? `<span class="flg">${r[2]}</span>` : ""}</span><span class="fst">${r[1]}</span></td>` +
+    r.slice(3).map(v => `<td>${raciChip(v)}</td>`).join("") + "</tr>").join("") + "</tbody>";
+
+/* ---------- 09 risks ---------- */
+$("riskGrid").innerHTML = RISKS.map(r => `
+  <div class="risk">
+    <span class="rd">${r[0]}</span>
+    <span class="rlev">${r[3]}</span>
+    <span class="rfix">${r[2]}</span>
+  </div>`).join("");
+
+/* ---------- 10 roadmap ---------- */
+$("roadmapGrid").innerHTML = ROADMAP.map(r => `
+  <div class="rm">
+    <h4>${r.h.toUpperCase()}<span>${r.y}</span></h4>
+    <ul>${r.li.map(l => `<li>${l}</li>`).join("")}</ul>
+  </div>`).join("");
+
+/* ---------- clock ---------- */
+function tick() {
+  const d = new Date();
+  const p2 = n => String(n).padStart(2, "0");
+  $("utcClock").textContent = `${p2(d.getUTCHours())}:${p2(d.getUTCMinutes())}:${p2(d.getUTCSeconds())} UTC`;
+}
+setInterval(tick, 1000); tick();
+</script>
+</body>
+</html>
