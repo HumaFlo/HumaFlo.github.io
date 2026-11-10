@@ -11,7 +11,6 @@
 <meta property="og:url" content="https://humaflo.github.io/timor-leste-public-transport/">
 <meta property="og:title" content="Timor-Leste Public Transport Master Plan 2024 — Briefing Dashboard">
 <meta property="og:description" content="Executive decision dashboard for the Timor-Leste Public Transport Master Plan 2024.">
-<meta name="theme-color" content="#FAF9F7">
 <style>
 /* ============ EDITORIAL BRIEF · palette per attached infographic style ============
    paper #FAF9F7 · surface #FFFFFF · ink #1C1917 · stone muted/faint · hairlines
@@ -409,14 +408,254 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
 <!-- ================= TOP STRIP ================= -->
 <nav class="topbar" aria-label="Briefing dashboard">
   <div class="wrap">
-    <span class="brand">Briefing dashboard<small>Timor-Leste · PT Master Plan 2024</small></span>
+    <span class="viewtabs" role="group" aria-label="Choose a view">
+      <button class="vtab" id="viewtab-brief" type="button" aria-pressed="false" aria-controls="view-brief">
+        <b>The Brief</b>
+      </button>
+      <button class="vtab is-on" id="viewtab-dive" type="button" aria-pressed="true" aria-controls="view-dive">
+        <b>Deep Dive</b>
+      </button>
+    </span>
     <span class="topright">
       <span class="clock" id="utcClock" title="UTC clock">--:--:-- UTC</span>
     </span>
   </div>
 </nav>
+<style>
+/* ================= VIEW TABS + "THE BRIEF" · uses the dashboard's tokens/typography ================= */
+.viewtabs{display:flex;gap:10px;align-items:stretch;flex-wrap:nowrap;flex:0 0 auto}
+.vtab{appearance:none;border:1.5px solid var(--fg);background:var(--surface);color:var(--fg);border-radius:10px;
+  padding:.5rem 1.05rem .55rem;text-align:left;cursor:pointer;display:flex;flex-direction:column;justify-content:center;gap:.26rem;
+  min-width:168px;box-shadow:0 2px 0 var(--fg);transition:background .15s,border-color .15s,color .15s,transform .12s,box-shadow .12s}
+.vtab b{font-size:1.02rem;font-weight:700;letter-spacing:-.01em;line-height:1.1;white-space:nowrap}
+.vtab:hover{border-color:var(--accent-ink);transform:translateY(-1px)}
+.vtab.is-on{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 2px 0 var(--accent-ink)}
+.vtab:focus-visible{outline:2px solid var(--accent-ink);outline-offset:2px}
+/* ---------- the brief ---------- */
+#view-brief{padding:2rem 0 2.4rem}
+.bf-title{font-size:clamp(1.7rem,3.4vw,2.35rem);font-weight:600;line-height:1.1;letter-spacing:-.02em;max-width:27ch;margin-top:.9rem}
+.bf-dek{font-size:1.02rem;line-height:1.55;color:var(--muted);max-width:62ch;margin-top:.85rem}
+.bf-dek b{color:var(--fg)}
+.bf-sec{margin-top:2.5rem;padding-top:1.9rem;border-top:1px solid var(--line)}
+.bf-h2{display:flex;align-items:center;gap:.7rem;font-size:clamp(1.25rem,2.3vw,1.55rem);font-weight:600;letter-spacing:-.015em;line-height:1.2}
+.bf-h2 .bf-no{font:700 11px/1 var(--mono);color:var(--accent-ink);letter-spacing:.14em}
+.bf-ic{width:25px;height:25px;flex:none;color:var(--accent-ink)}
+.bf-grid2{display:grid;grid-template-columns:1.02fr .98fr;gap:2rem;align-items:start;margin-top:1.3rem}
+.bf-lede{color:var(--muted);line-height:1.62;max-width:58ch}
+.bf-lede b{color:var(--fg)}
+.bf-fig{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:1.05rem 1.1rem .9rem}
+.bf-tk{font-size:1.02rem;font-weight:600;line-height:1.35}
+.bf-tk em{font-style:normal;color:var(--accent-ink)}
+.bf-cap{margin-top:.55rem;font:500 10.5px/1.5 var(--mono);letter-spacing:.02em;color:var(--faint)}
+/* bars (zero baseline, direct labels) */
+.bf-brow{display:grid;grid-template-columns:148px 1fr;gap:.65rem;align-items:center;margin:.4rem 0}
+.bf-blab{font:600 10.5px/1.3 var(--mono);color:var(--muted);text-align:right}
+.bf-btrack{position:relative;background:var(--shade);border-radius:4px;height:22px}
+.bf-bar{position:absolute;left:0;top:0;bottom:0;background:var(--accent-soft);border-radius:4px;width:var(--w)}
+.bf-bar.on{background:var(--accent)}
+.bf-bval{position:absolute;left:calc(var(--w) + 8px);top:50%;transform:translateY(-50%);font:600 10.5px/1 var(--mono);color:var(--fg);white-space:nowrap;font-variant-numeric:tabular-nums}
+.bf-brow.wide .bf-bval{left:auto;right:8px;color:#fff}
+/* line chart */
+.bf-linebox svg{width:100%;height:auto;display:block}
+.bf-line{fill:none;stroke:var(--accent);stroke-width:2.4;stroke-linecap:round}
+.bf-grid{stroke:var(--line);stroke-width:1}
+.bf-dot{fill:var(--accent);stroke:var(--surface);stroke-width:2}
+.bf-val{font:600 11.5px var(--mono);fill:var(--fg);text-anchor:middle;font-variant-numeric:tabular-nums}
+.bf-yr{font:500 10px var(--mono);fill:var(--faint);text-anchor:middle}
+/* chips + pilot mini-tiles */
+.bf-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.9rem}
+.bf-chip{font:500 10.5px/1.45 var(--mono);color:var(--fg);background:var(--shade);border:1px solid var(--line);border-radius:999px;padding:.4rem .7rem}
+.bf-chip b{color:var(--accent-ink)}
+.bf-pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem 1rem;margin-top:1rem}
+.bf-pv{border-top:2px solid var(--hair);padding-top:.5rem}
+.bf-pv .n{font-size:1.3rem;font-weight:600;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--accent)}
+.bf-pv .n small{font-size:.55em;font-weight:600;color:var(--faint);letter-spacing:0}
+.bf-pv .l{font:500 10px/1.35 var(--mono);color:var(--faint);margin-top:.28rem;letter-spacing:.02em}
+/* timeline */
+.bf-tl{margin:1.1rem 0 0 6px;padding-left:1.7rem;border-left:2px solid var(--accent)}
+.bf-tlp{position:relative;padding-bottom:1.4rem}
+.bf-tlp:last-child{padding-bottom:.2rem}
+.bf-tlp::before{content:"";position:absolute;left:-2.05rem;top:.3rem;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.bf-tlp h3{font-size:1.06rem;font-weight:600;letter-spacing:-.01em}
+.bf-tlp h3 span{font:500 10.5px var(--mono);color:var(--faint);letter-spacing:.06em;margin-left:.55rem}
+.bf-tlp ul{list-style:none;margin-top:.45rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem .95rem}
+.bf-tlp li{font-size:13px;line-height:1.45;color:var(--muted);padding-left:.85rem;position:relative}
+.bf-tlp li::before{content:"";position:absolute;left:0;top:.52em;width:4px;height:4px;border-radius:50%;background:var(--accent-ink)}
+.bf-cnt{display:inline-block;font:600 10px/1 var(--mono);letter-spacing:.1em;color:var(--accent-ink);background:var(--accent-soft);border-radius:999px;padding:.32rem .6rem;margin-top:.5rem}
+/* today vs reform */
+.bf-cmp{display:grid;grid-template-columns:1fr 40px 1fr;margin-top:1.1rem}
+.bf-cmp .hd{font:600 10.5px/1.3 var(--mono);letter-spacing:.14em;text-transform:uppercase;padding-bottom:.5rem;border-bottom:2px solid var(--fg)}
+.bf-cmp .hd.b{color:var(--accent-ink);border-color:var(--accent-ink)}
+.bf-cmp .row{padding:.75rem 0;border-bottom:1px dashed var(--hair);font-size:13px;line-height:1.5}
+.bf-cmp .row.a{color:var(--muted);padding-right:1rem}
+.bf-cmp .row.b{padding-left:1rem}
+.bf-cmp .row.b::before{content:"→ ";color:var(--accent-ink);font-weight:700}
+.bf-cmp .mid{border-left:1px solid var(--line)}
+/* decisions + risks */
+.bf-dgrid{display:grid;grid-template-columns:1.12fr .88fr;gap:1.8rem;align-items:start;margin-top:1rem}
+.bf-dq{display:flex;gap:.7rem;padding:.65rem 0;border-bottom:1px dashed var(--hair)}
+.bf-dq:last-child{border-bottom:0}
+.bf-dq .id{flex:none;font:700 10px/1 var(--mono);letter-spacing:.04em;color:var(--accent-ink);background:var(--accent-soft);border-radius:5px;padding:.42rem .45rem;height:fit-content}
+.bf-dq .t{font-size:13.5px;font-weight:600;line-height:1.4}
+.bf-dq .m{font:500 10.5px/1.5 var(--mono);color:var(--faint);margin-top:.22rem}
+.bf-risk{display:flex;gap:.65rem;align-items:baseline;padding:.55rem .7rem;border:1px solid var(--line);border-radius:8px;background:var(--surface);margin-bottom:.5rem}
+.bf-risk:last-child{margin-bottom:0}
+.bf-risk .lv{flex:none;font:700 9.5px/1 var(--mono);letter-spacing:.08em;color:var(--accent-ink);background:var(--accent-soft);border-radius:4px;padding:.3rem .4rem}
+.bf-risk .rt{font-size:12.5px;font-weight:600}
+.bf-risk .rs{font-size:11.5px;line-height:1.45;color:var(--muted)}
+@media(max-width:860px){
+  .vtab{min-width:0;flex:1 1 140px}
+  .bf-grid2,.bf-dgrid{grid-template-columns:1fr}
+  .bf-tlp ul{grid-template-columns:1fr}
+  .bf-cmp{grid-template-columns:1fr}
+  .bf-cmp .mid{border:0;height:6px}
+  .bf-cmp .row.a,.bf-cmp .row.b{padding-left:0;padding-right:0}
+  .bf-pgrid{grid-template-columns:repeat(2,1fr)}
+  .bf-brow{grid-template-columns:104px 1fr}
+}
+@media print{.viewtabs{display:none!important}}
+</style>
 
-<!-- ================= MASTHEAD ================= -->
+<section id="view-brief" aria-label="The Brief — one-page infographic" hidden>
+  <div class="wrap">
+    <h2 class="bf-title">The reform at a glance: from informal microlets to a scheduled, licensed network</h2>
+    <p class="bf-dek">What US$35.14M buys across three phases, the 26-route network it restructures, the 15 moves that rebuild the sector, and the five decisions that unlock it. For the interactive boards, the counterparts matrix and the map, switch to <b>Deep Dive</b>.</p>
+    <div class="kgrid" style="margin-top:1.7rem">
+      <div class="tile hot"><span class="lbl">Total investment</span><p class="num">US$35.14M</p><p class="ctx">three phases · 2023–2035 · Table 9.3</p></div>
+      <div class="tile"><span class="lbl">Routes restructured</span><p class="num">26</p><p class="ctx">13 microlet · 11 regional · 2 airport</p></div>
+      <div class="tile"><span class="lbl">New facilities</span><p class="num">74</p><p class="ctx">4 hubs · 20 interchanges · 50 bus stops</p></div>
+      <div class="tile"><span class="lbl">Reform moves</span><p class="num">15</p><p class="ctx">6 short · 5 medium · 4 long term</p></div>
+    </div>
+  </div>
+
+  <div class="wrap bf-sec">
+    <h3 class="bf-h2"><svg class="bf-ic" viewBox="0 0 80 80" aria-hidden="true"><rect x="8" y="12" width="64" height="44" rx="4" fill="none" stroke="currentColor" stroke-width="4"/><polyline points="16,44 28,32 36,38 52,24 64,30" fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><circle cx="52" cy="24" r="5" fill="currentColor"/></svg><span class="bf-no">01</span>Why now — the demand is arriving faster than the network</h3>
+    <div class="bf-grid2">
+      <p class="bf-lede">Timor-Leste's buses are informal microlets: no schedules, no licence conditions beyond paperwork, and terminals inherited from the Indonesian era. The plan's own population series puts the country at <b>1.48 million by 2030</b> — Dili alone at <b>833,000</b> — on a network where roughly <b>half of surveyed users cite scheduling</b> as the top improvement they want. The reform is sequenced so that regulation, fleet and infrastructure land before demand peaks.</p>
+      <figure class="bf-fig" role="img" aria-label="Line chart of Timor-Leste population 2015 to 2050, rising from 1.20 million to 1.85 million on a zero baseline — about 54 percent growth, with 1.48 million already reached by 2030.">
+        <div class="bf-tk">Population grows <em>~54%</em> by 2050 — a quarter more people as early as 2030</div>
+        <div class="bf-linebox"><svg viewBox="0 0 720 240" aria-hidden="true">
+          <line x1="48" y1="210.0" x2="674" y2="210.0" class="bf-grid"/><text x="42" y="213.0" class="bf-yr" text-anchor="end">0M</text><line x1="48" y1="164.0" x2="674" y2="164.0" class="bf-grid"/><text x="42" y="167.0" class="bf-yr" text-anchor="end">0.5M</text><line x1="48" y1="118.0" x2="674" y2="118.0" class="bf-grid"/><text x="42" y="121.0" class="bf-yr" text-anchor="end">1M</text><line x1="48" y1="72.0" x2="674" y2="72.0" class="bf-grid"/><text x="42" y="75.0" class="bf-yr" text-anchor="end">1.5M</text><line x1="48" y1="26.0" x2="674" y2="26.0" class="bf-grid"/><text x="42" y="29.0" class="bf-yr" text-anchor="end">2M</text>
+          <polyline class="bf-line" points="48.0,99.6 137.4,90.5 226.9,82.0 316.3,73.5 405.7,64.7 495.1,56.0 584.6,47.5 674.0,39.4"/>
+          <circle cx="48.0" cy="99.6" r="4" class="bf-dot"/><text x="48.0" y="89.6" class="bf-val">1.20M</text><text x="48.0" y="232.0" class="bf-yr">2015</text><circle cx="316.3" cy="73.5" r="4" class="bf-dot"/><text x="316.3" y="63.5" class="bf-val">1.48M</text><text x="316.3" y="232.0" class="bf-yr">2030</text><circle cx="674.0" cy="39.4" r="4" class="bf-dot"/><text x="674.0" y="29.4" class="bf-val">1.85M</text><text x="674.0" y="232.0" class="bf-yr">2050</text>
+        </svg></div>
+      </figure>
+    </div>
+  </div>
+
+  <div class="wrap bf-sec">
+    <h3 class="bf-h2"><svg class="bf-ic" viewBox="0 0 80 80" aria-hidden="true"><rect x="10" y="30" width="60" height="34" rx="6" fill="none" stroke="currentColor" stroke-width="4"/><rect x="10" y="16" width="60" height="14" rx="4" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="24" cy="64" r="7" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="56" cy="64" r="7" fill="none" stroke="currentColor" stroke-width="4"/></svg><span class="bf-no">02</span>The money — US$35.14M across three phases</h3>
+    <figure class="bf-fig" role="img" aria-label="Horizontal bar chart of investment by phase on a zero baseline: Phase 1 US$17.16 million, Phase 2 US$14.53 million, Phase 3 US$3.45 million. Phase 1 is dominated by the Dili pilot bus at 74 percent of the phase.">
+      <div class="bf-tk">Phase 1 carries the pilot — <em>74%</em> of its budget is the Dili bus operation</div>
+      <div style="margin-top:.45rem">
+<div class="bf-brow wide"><span class="bf-blab">Phase 1 · up to 2025</span><span class="bf-btrack" style="--w:100.0%"><span class="bf-bar on"></span><span class="bf-bval">US$17.16M</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Phase 2 · 2026–2030</span><span class="bf-btrack" style="--w:84.7%"><span class="bf-bar"></span><span class="bf-bval">US$14.53M</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Phase 3 · 2031–2035</span><span class="bf-btrack" style="--w:20.1%"><span class="bf-bar"></span><span class="bf-bval">US$3.45M</span></span></div>
+      </div>
+      <figcaption class="bf-cap">Investment envelope by phase, zero baseline, direct labels · Source: PTMP 2024 Table ES.14–ES.16</figcaption>
+    </figure>
+    <div class="bf-chips">
+      <span class="bf-chip"><b>Phase 1</b> Dili pilot bus (capex + opex) US$12.71M — 74% of the phase · engineering design US$1.5M</span>
+      <span class="bf-chip"><b>Phase 2</b> Facility programme US$11.68M — 80% of the phase · technical studies US$2.0M</span>
+      <span class="bf-chip"><b>Phase 3</b> Capacity building US$0.9M — 26% of the phase · facility programme US$1.8M</span>
+    </div>
+  </div>
+
+  <div class="wrap bf-sec">
+    <h3 class="bf-h2"><svg class="bf-ic" viewBox="0 0 80 80" aria-hidden="true"><circle cx="14" cy="40" r="7" fill="currentColor"/><circle cx="66" cy="18" r="7" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="66" cy="62" r="7" fill="none" stroke="currentColor" stroke-width="4"/><path d="M21 40 C 42 40, 46 20, 59 18" fill="none" stroke="currentColor" stroke-width="4"/><path d="M21 40 C 42 40, 46 60, 59 62" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="6 5"/></svg><span class="bf-no">03</span>The network</h3>
+    <div class="bf-grid2">
+      <figure class="bf-fig" role="img" aria-label="Horizontal bar chart of the 11 regional bus corridors by length, zero baseline, sorted: Lospalos 205 km, Viqueque 177 km, Suai 171 km, down to Liquiçá 23 km — 1,197 km in total, all radiating from Dili.">
+        <div class="bf-tk">All 11 regional corridors radiate from Dili — <em>1,196.6 km</em> in total</div>
+        <div style="margin-top:.45rem">
+<div class="bf-brow wide"><span class="bf-blab">Dili – Lospalos</span><span class="bf-btrack" style="--w:100.0%"><span class="bf-bar on"></span><span class="bf-bval">205.1 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Viqueque</span><span class="bf-btrack" style="--w:86.1%"><span class="bf-bar"></span><span class="bf-bval">176.6 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Suai</span><span class="bf-btrack" style="--w:83.4%"><span class="bf-bar"></span><span class="bf-bval">171.0 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Maliana</span><span class="bf-btrack" style="--w:64.7%"><span class="bf-bar"></span><span class="bf-bval">132.7 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Baucau</span><span class="bf-btrack" style="--w:57.4%"><span class="bf-bar"></span><span class="bf-bval">117.7 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Same</span><span class="bf-btrack" style="--w:54.7%"><span class="bf-bar"></span><span class="bf-bval">112.1 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Ainaro</span><span class="bf-btrack" style="--w:53.3%"><span class="bf-bar"></span><span class="bf-bval">109.3 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Manatuto</span><span class="bf-btrack" style="--w:28.6%"><span class="bf-bar"></span><span class="bf-bval">58.7 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Ermera</span><span class="bf-btrack" style="--w:22.4%"><span class="bf-bar"></span><span class="bf-bval">46.0 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Aileu</span><span class="bf-btrack" style="--w:21.6%"><span class="bf-bar"></span><span class="bf-bval">44.3 km</span></span></div>
+<div class="bf-brow"><span class="bf-blab">Dili – Liquiçá</span><span class="bf-btrack" style="--w:11.3%"><span class="bf-bar"></span><span class="bf-bval">23.1 km</span></span></div>
+        </div>
+        <figcaption class="bf-cap">Refined regional route lengths, zero baseline, sorted · Source: PTMP 2024 Table ES.14 #3 · §6.5</figcaption>
+      </figure>
+      <div>
+        <h4 style="font-size:1.02rem;font-weight:600;letter-spacing:-.01em">The Dili pilot bus — the plan's proof of concept</h4>
+        <div class="bf-pgrid">
+          <div class="bf-pv"><div class="n">25.3<small> km</small></div><div class="l">corridor roundtrip (Av. Nicolau Lobato)</div></div>
+          <div class="bf-pv"><div class="n">21</div><div class="l">vehicles incl. 10% spares</div></div>
+          <div class="bf-pv"><div class="n">64</div><div class="l">bus stops at 400 m spacing</div></div>
+          <div class="bf-pv"><div class="n">12</div><div class="l">max trips/hour, weekday</div></div>
+          <div class="bf-pv"><div class="n">US$9.72M</div><div class="l">capital cost</div></div>
+          <div class="bf-pv"><div class="n">US$2.99M</div><div class="l">annualised operations</div></div>
+        </div>
+        <p class="bf-cap" style="margin-top:.6rem">Source: PTMP 2024 §6.7.2 · Table 6.183</p>
+        <div class="bf-chips">
+          <span class="bf-chip"><b>26 routes</b> = 13 Dili circulars + 2 airport expresses + 11 regional</span>
+          <span class="bf-chip"><b>74 facilities</b> = 4 hubs + 20 interchanges + 50 Dili bus stops</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap bf-sec">
+    <h3 class="bf-h2"><svg class="bf-ic" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="26" fill="none" stroke="currentColor" stroke-width="4" stroke-dasharray="7 6"/><path d="M40 14 v9 M40 57 v9 M14 40 h9 M57 40 h9" stroke="currentColor" stroke-width="4"/><path d="M24 44 l10 -10 8 6 14 -14" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><circle cx="56" cy="26" r="3.6" fill="currentColor"/></svg><span class="bf-no">04</span>The roadmap — 15 moves in three phases</h3>
+    <div class="bf-tl">
+      <div class="bf-tlp">
+        <h3>Short term <span>up to 2025</span></h3>
+        <ul><li>Enforce existing traffic &amp; facility laws</li><li>Basic regional bus timetable — the top user demand</li><li>PT Department established inside the LTA</li></ul>
+        <span class="bf-cnt">6 MOVES · FOUNDATIONS</span>
+      </div>
+      <div class="bf-tlp">
+        <h3>Medium term <span>2026–2030</span></h3>
+        <ul><li>Collaborative governance via an operator association</li><li>Service-quality requirements beyond licensing</li><li>Timetabled urban + regional services</li></ul>
+        <span class="bf-cnt">5 MOVES · PROFESSIONALISATION</span>
+      </div>
+      <div class="bf-tlp">
+        <h3>Long term <span>2031–2035</span></h3>
+        <ul><li>Competitively tendered franchising / contracting</li><li>New vehicle procurement, modern infrastructure</li><li>Digital network management + customer charter</li></ul>
+        <span class="bf-cnt">4 MOVES · MARKET MECHANISMS</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap bf-sec">
+    <h3 class="bf-h2"><svg class="bf-ic" viewBox="0 0 80 80" aria-hidden="true"><path d="M14 52 h44" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity=".35"/><path d="M14 52 h18 l8 -22 h20" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M58 24 l9 7 -9 7" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="bf-no">05</span>Today vs the plan's reform</h3>
+    <div class="bf-cmp">
+      <div class="hd">Today — Table 3.26 reality</div><div class="hd mid"></div><div class="hd b">The reform pathway</div>
+      <div class="row a">No schedules: drivers wait until full; ~50% of users cite scheduling as the top improvement.</div><div class="mid"></div><div class="row b">A basic regional timetable by 2025 (Move 02), full timetabling of urban and regional services by 2030 (Move 10).</div>
+      <div class="row a">Indonesian-era terminals deteriorated without maintenance; new bus stops are not delivered.</div><div class="mid"></div><div class="row b">US$15.33M facility programme — 4 hubs, 20 interchanges, 50 Dili bus stops, designed for climate resilience.</div>
+      <div class="row a">Operators are individuals, not companies; no association exists.</div><div class="mid"></div><div class="row b">Operator forums (Move 05) mature into an association with collective bargaining (Moves 07–09), then franchising (Move 12).</div>
+    </div>
+    <p class="bf-cap" style="margin-top:.6rem">Left column quoted from the plan's RACI assessment (Table 3.26) and §6 service review · right column from §8 reform moves</p>
+  </div>
+
+  <div class="wrap bf-sec">
+    <h3 class="bf-h2"><svg class="bf-ic" viewBox="0 0 80 80" aria-hidden="true"><rect x="12" y="14" width="56" height="52" rx="6" fill="none" stroke="currentColor" stroke-width="4"/><rect x="12" y="14" width="56" height="13" rx="6" fill="currentColor" opacity=".25"/><path d="M22 38 h36 M22 48 h36 M22 58 h22" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg><span class="bf-no">06</span>What unlocks it — five decisions, five standing risks</h3>
+    <div class="bf-dgrid">
+      <div>
+        <div class="bf-dq"><span class="id">DQ-1</span><div><div class="t">Approve the Phase 1 financing envelope — US$17.16M, incl. the US$12.71M pilot bus package</div><div class="m">MOTC / Ministry of Finance · within the Phase 1 window, by 2025</div></div></div>
+        <div class="bf-dq"><span class="id">DQ-2</span><div><div class="t">Pass the Land Transport Authority legislation</div><div class="m">Council of Ministers · short-term window (§8.4.1)</div></div></div>
+        <div class="bf-dq"><span class="id">DQ-3</span><div><div class="t">Approve detailed engineering design — US$1.5M for selected terminals</div><div class="m">MOTC · Phase 1</div></div></div>
+        <div class="bf-dq"><span class="id">DQ-4</span><div><div class="t">Confirm ADB loan preparation for medium-term facilities — US$11.68M</div><div class="m">MOTC / MPW / ADB · ready by 2026</div></div></div>
+        <div class="bf-dq"><span class="id">DQ-5</span><div><div class="t">Introduce and enforce the basic regional bus timetable</div><div class="m">DNTT · Phase 1 (plan key move 2)</div></div></div>
+      </div>
+      <div>
+        <div class="bf-risk"><span class="lv">HIGH</span><div><div class="rt">Growth &amp; development</div><div class="rs">1.48M people by 2030 on an informal, unscheduled network.</div></div></div>
+        <div class="bf-risk"><span class="lv">HIGH</span><div><div class="rt">Network &amp; connectivity</div><div class="rs">Dili-centred radial network; weak east–west integration.</div></div></div>
+        <div class="bf-risk"><span class="lv">HIGH</span><div><div class="rt">Level of service</div><div class="rs">No schedules, overcrowding, 6AM–6PM span, unsafe driving.</div></div></div>
+        <div class="bf-risk"><span class="lv">HIGH</span><div><div class="rt">Infrastructure</div><div class="rs">Deteriorating terminals, access-for-all gaps, flood exposure.</div></div></div>
+        <div class="bf-risk"><span class="lv">HIGH</span><div><div class="rt">Institutional &amp; legal</div><div class="rs">LTA legislation pending; DNTT under-resourced.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="view-dive" aria-label="Deep Dive — full interactive dashboard">
+
+<!-- ================= MASTHEAD (lives inside #view-dive, opened at the end of part1b_brief_view.html) ================= -->
 <header class="masthead" id="top">
   <div class="wrap cols-m">
     <div>
@@ -474,7 +713,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-actions">
         <span class="acc-no" aria-hidden="true">01</span>
-        <span><span class="acc-title">Action queue</span></span>
+        <span><span class="acc-title">Action queue</span><span class="acc-meta">5 items · provisional</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -490,7 +729,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-routes">
         <span class="acc-no" aria-hidden="true">02</span>
-        <span><span class="acc-title">Route board</span></span>
+        <span><span class="acc-title">Route board</span><span class="acc-meta">26 routes · tap a number</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -513,7 +752,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-money">
         <span class="acc-no" aria-hidden="true">03</span>
-        <span><span class="acc-title">Money</span></span>
+        <span><span class="acc-title">Money</span><span class="acc-meta">US$35.14M · Table 9.3</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -533,7 +772,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-riders">
         <span class="acc-no" aria-hidden="true">04</span>
-        <span><span class="acc-title">Riders</span></span>
+        <span><span class="acc-title">Riders</span><span class="acc-meta">daily boardings · 4 scenarios</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -550,7 +789,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-corridors">
         <span class="acc-no" aria-hidden="true">05</span>
-        <span><span class="acc-title">Corridors</span></span>
+        <span><span class="acc-title">Corridors</span><span class="acc-meta">regional trips/day</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -568,7 +807,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-modes">
         <span class="acc-no" aria-hidden="true">06</span>
-        <span><span class="acc-title">Modes</span></span>
+        <span><span class="acc-title">Modes</span><span class="acc-meta">9 screenlines · PM peak</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -586,7 +825,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-build">
         <span class="acc-no" aria-hidden="true">07</span>
-        <span><span class="acc-title">Build</span></span>
+        <span><span class="acc-title">Build</span><span class="acc-meta">74 sites · 3 waves · T7.34–7.37</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -603,7 +842,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-tables">
         <span class="acc-no" aria-hidden="true">08</span>
-        <span><span class="acc-title">Drill-down</span></span>
+        <span><span class="acc-title">Drill-down</span><span class="acc-meta">sortable · tap headers</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -641,7 +880,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-risks">
         <span class="acc-no" aria-hidden="true">09</span>
-        <span><span class="acc-title">Risk register</span></span>
+        <span><span class="acc-title">Risk register</span><span class="acc-meta">Table ES.2 · plan issues analysis</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -657,7 +896,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-roadmap">
         <span class="acc-no" aria-hidden="true">10</span>
-        <span><span class="acc-title">Reform roadmap</span></span>
+        <span><span class="acc-title">Reform roadmap</span><span class="acc-meta">3 stages · ES.11–ES.12</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -673,7 +912,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-method">
         <span class="acc-no" aria-hidden="true">11</span>
-        <span><span class="acc-title">Method &amp; source</span></span>
+        <span><span class="acc-title">Method &amp; source</span><span class="acc-meta">defensibility layer</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -732,7 +971,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-cmodel">
         <span class="acc-no" aria-hidden="true">C1</span>
-        <span><span class="acc-title">Operating model</span></span>
+        <span><span class="acc-title">Operating model</span><span class="acc-meta">hybrid model · §8.3</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -750,7 +989,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-croster">
         <span class="acc-no" aria-hidden="true">C2</span>
-        <span><span class="acc-title">Counterpart roster</span></span>
+        <span><span class="acc-title">Counterpart roster</span><span class="acc-meta">12 institutions · §3.5.2 + §8.3</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -767,7 +1006,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-craci">
         <span class="acc-no" aria-hidden="true">C3</span>
-        <span><span class="acc-title">Who does what today</span></span>
+        <span><span class="acc-title">Who does what today</span><span class="acc-meta">RACI · 20 functions × 9 agencies · Table 3.26</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -785,7 +1024,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
     <h2 class="acc-h">
       <button type="button" class="acc-btn" aria-expanded="false" aria-controls="b-cmoves">
         <span class="acc-no" aria-hidden="true">C4</span>
-        <span><span class="acc-title">Reform moves</span></span>
+        <span><span class="acc-title">Reform moves</span><span class="acc-meta">15 moves · Tables 8.4–8.5</span></span>
         <span class="acc-x" aria-hidden="true"></span>
       </button>
     </h2>
@@ -798,6 +1037,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
 </div><!-- /pane-counterparts -->
 
 <div id="pane-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+<p class="hint wrap" style="padding-top:1.6rem">Recommended interventions · drag to pan, scroll to zoom, tap a marker for detail, tap a municipality to fly to it · tap the Dili inset (bottom right) to expand Dili over the whole map — pan, zoom and tap markers inside it</p>
 <section id="mapsec" aria-label="Interventions map" style="border-top:0">
   <div class="wrap" style="padding-bottom:2.6rem">
     <div class="mapwrap" id="mapWrap">
@@ -833,8 +1073,44 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
 <footer>
   <div class="wrap">
     <p>All information based on Transport Sector Master Plan 2024. Please refer to original document for authoritative information. Send any feedback or recommendation via form available in homepage of this Brief.</p>
+    <p style="font-size:11.5px;color:#6F6A64;margin-top:.5rem">Map design informed by curated examples found via <a href="https://www.dataviz-inspiration.com/map" target="_blank" rel="noopener">dataviz-inspiration.com</a> (Yan Holtz, catalog CC BY 4.0): an EUISS infrastructure reference map, Perrin Remonté's watersheds of France, and “A day of trains across Europe” by chillchamp1.</p>
   </div>
 </footer>
+</div><!-- /#view-dive -->
+
+<script>
+/* ================= VIEW SWITCH · "The brief" <-> "Deep Dive" =================
+   Deep Dive is the default so every chart/map initializes exactly as before.
+   Switching back re-dispatches resize so ECharts/Leaflet re-fit. */
+(function(){
+  var TABS = { brief: document.getElementById("viewtab-brief"), dive: document.getElementById("viewtab-dive") };
+  var VIEWS = { brief: document.getElementById("view-brief"), dive: document.getElementById("view-dive") };
+  var current = "dive";
+  function apply(mode, fromHash){
+    if (!VIEWS[mode] || !TABS[mode] || mode === current) return;
+    current = mode;
+    for (var k in VIEWS) {
+      var on = (k === mode);
+      VIEWS[k].hidden = !on;
+      TABS[k].classList.toggle("is-on", on);
+      TABS[k].setAttribute("aria-pressed", on ? "true" : "false");
+    }
+    if (mode === "dive") setTimeout(function(){ window.dispatchEvent(new Event("resize")); }, 60);
+    if (!fromHash) { try { history.replaceState(null, "", mode === "dive" ? "#dive" : "#brief"); } catch (e) {} }
+    window.scrollTo(0, 0);
+  }
+  TABS.brief.addEventListener("click", function(){ apply("brief"); });
+  TABS.dive.addEventListener("click", function(){ apply("dive"); });
+  /* deep-link: let the Deep Dive finish initializing while visible, then switch */
+  if (/^#brief$/.test(location.hash)) setTimeout(function(){ apply("brief", true); }, 0);
+  /* same-document hash navigation (back/forward, shared #brief/#dive links) */
+  window.addEventListener("hashchange", function(){
+    var m = /^#brief$/.test(location.hash) ? "brief" : (/^#dive$/.test(location.hash) ? "dive" : null);
+    if (m) apply(m, true);
+  });
+  window.__viewTabs = { apply: apply, current: function(){ return current; } };
+})();
+</script>
 
 <script>
 /* ================= SOURCE DATA (all values from the attached "Public Transport Master Plan 2024") ================= */
@@ -1500,15 +1776,6 @@ function initMap() {
   const NS = "http://www.w3.org/2000/svg";
   const root = document.createElementNS(NS, "g");
   svg.appendChild(root);
-  const gVector = document.createElementNS(NS, "g");
-  gVector.setAttribute("pointer-events", "none");
-  svg.appendChild(gVector);
-  const gVectorLand = document.createElementNS(NS, "g");
-  gVectorLand.setAttribute("pointer-events", "none");
-  gVector.appendChild(gVectorLand);
-  const gVectorOverlay = document.createElementNS(NS, "g");
-  gVectorOverlay.setAttribute("pointer-events", "none");
-  gVector.appendChild(gVectorOverlay);
   const gTiles = document.createElementNS(NS, "g"); gTiles.setAttribute("pointer-events", "none"); root.appendChild(gTiles);
   const gLand = document.createElementNS(NS, "g"); root.appendChild(gLand);
 
@@ -1555,7 +1822,6 @@ function initMap() {
          Tiles render UNDER the land paths, so land stays transparent in imagery mode and only
          turns dark in fallback mode (a provisional fill would hide loaded tiles). --- */
   let tileStat = {}, satFb = false, satTimer = null, lastFbTry = 0, lastNeedSize = 0;
-  let vectorLandPaths = [], vectorCoastPaths = [], vectorLandBase = null;
   const TILE_SRC = [
     { maxZ: 17, url: (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}` },
     { maxZ: 17, url: (z, x, y) => `https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}` },
@@ -1568,12 +1834,6 @@ function initMap() {
         : mode === "fb" ? "rgba(88,102,86,.92)" : "transparent");
       p.setAttribute("stroke", mode === "plain" ? "#E2DCD2" : mode === "fb" ? "rgba(255,255,255,.5)" : "rgba(255,255,255,.75)");
     });
-    vectorLandPaths.forEach(p => {
-      p.setAttribute("fill", mode === "plain" ? (MUN_COVERED.includes(p.dataset.mun) ? "rgba(246,227,215,.6)" : "#FDFBF7")
-        : mode === "fb" ? "rgba(88,102,86,.92)" : "transparent");
-      p.setAttribute("stroke", mode === "plain" ? "#D6D3D1" : mode === "fb" ? "rgba(255,255,255,.65)" : "rgba(255,255,255,.8)");
-    });
-    vectorCoastPaths.forEach(p => p.setAttribute("stroke", mode === "plain" ? "#A39D93" : "rgba(255,255,255,.9)"));
     coastHalos[0].setAttribute("stroke", mode === "plain" ? "rgba(90,125,143,.10)" : "rgba(255,255,255,.11)");
     coastHalos[1].setAttribute("stroke", mode === "plain" ? "rgba(90,125,143,.17)" : "rgba(255,255,255,.18)");
     coast.setAttribute("stroke", mode === "plain" ? "#A39D93" : mode === "fb" ? "rgba(255,255,255,.8)" : "rgba(255,255,255,.9)");
@@ -1612,31 +1872,7 @@ function initMap() {
   });
   root.appendChild(gSea);
 
-  function clearSvgGroup(group) {
-    while (group.firstChild) group.removeChild(group.firstChild);
-  }
-  function svgShape(group, name, attrs) {
-    const el = document.createElementNS(NS, name);
-    Object.entries(attrs).forEach(([key, value]) => el.setAttribute(key, value));
-    group.appendChild(el);
-    return el;
-  }
-  function svgText(group, text, x, y, color) {
-    const el = svgShape(group, "text", {
-      x, y, "text-anchor": "middle", "font-family": "ui-monospace, monospace",
-      "font-size": 9, "font-weight": 600, fill: color || "#1C1917",
-      stroke: "rgba(250,249,247,.9)", "stroke-width": 3, "paint-order": "stroke"
-    });
-    el.textContent = text;
-  }
-
   const muniLab = TLS_ADM1.map(f => { const b = ringBbox(bigRing(f)); return { n: f.n, x: MX((b[0] + b[1]) / 2), y: MY((b[2] + b[3]) / 2), w: b[1] - b[0], h: b[3] - b[2] }; });
-  const screenPathD = (f, toScreen) => {
-    const polys = f.t === "Polygon" ? [f.c] : f.c;
-    return polys.map(poly => poly.map(ring =>
-      "M" + ring.map(([lon, lat]) => toScreen(lon, lat).map(v => v.toFixed(2)).join(" ")).join("L") + "Z"
-    ).join("")).join("");
-  };
 
   /* view */
   let sFit = 1;
@@ -1649,40 +1885,6 @@ function initMap() {
     sFit = Math.min(W / (MX(b[1]) - MX(b[0])), H / (MY(b[2]) - MY(b[3]))) * 0.93;
     view.s = sFit; view.cx = MX((b[0] + b[1]) / 2); view.cy = MY((b[2] + b[3]) / 2);
     return true;
-  }
-  function buildVectorLand() {
-    clearSvgGroup(gVectorLand);
-    vectorLandPaths = [];
-    vectorCoastPaths = [];
-    vectorLandBase = { cx: view.cx, cy: view.cy, s: view.s };
-    const toBase = (lon, lat) => [
-      (MX(lon) - vectorLandBase.cx) * vectorLandBase.s + wrap.clientWidth / 2,
-      (MY(lat) - vectorLandBase.cy) * vectorLandBase.s + wrap.clientHeight / 2
-    ];
-    TLS_ADM1.forEach(f => {
-      const p = svgShape(gVectorLand, "path", {
-        d: screenPathD(f, toBase), "fill-rule": "evenodd", "stroke-width": .8,
-        "vector-effect": "non-scaling-stroke"
-      });
-      p.dataset.mun = f.n;
-      p.classList.add("muni-vector");
-      vectorLandPaths.push(p);
-    });
-    TLS_ADM0.forEach(f => {
-      vectorCoastPaths.push(svgShape(gVectorLand, "path", {
-        d: screenPathD(f, toBase), fill: "none", stroke: "#A39D93",
-        "stroke-width": 1.2, "vector-effect": "non-scaling-stroke"
-      }));
-    });
-    satApplyBase();
-    applyVectorLandView();
-  }
-  function applyVectorLandView() {
-    if (!vectorLandBase) return;
-    const ratio = view.s / vectorLandBase.s;
-    const tx = wrap.clientWidth / 2 * (1 - ratio) + (vectorLandBase.cx - view.cx) * view.s;
-    const ty = wrap.clientHeight / 2 * (1 - ratio) + (vectorLandBase.cy - view.cy) * view.s;
-    gVectorLand.setAttribute("transform", `translate(${tx.toFixed(2)},${ty.toFixed(2)}) scale(${ratio})`);
   }
   const clampS = s => Math.max(sFit * 0.7, Math.min(s, 256 * Math.pow(2, 15)));
 
@@ -1697,7 +1899,6 @@ function initMap() {
     if (!isFinite(view.s) || view.s <= 0) { if (!fitView()) return; }
     const W = wrap.clientWidth, H = wrap.clientHeight;
     root.setAttribute("transform", `translate(${(W / 2 - view.cx * view.s).toFixed(2)},${(H / 2 - view.cy * view.s).toFixed(2)}) scale(${view.s})`);
-    applyVectorLandView();
     gSea.querySelectorAll("text").forEach(el => el.setAttribute("font-size", (+el.dataset.px / view.s).toFixed(6) + "px"));
     updateScale();
     drawTiles();
@@ -1835,10 +2036,6 @@ function initMap() {
     c2.strokeText(txt, x, y); c2.fillStyle = sat ? "#FFFFFF" : "#1C1917"; c2.fillText(txt, x, y);
   }
   function drawScene(c2, W, H, t, inset) {
-    if (!c2) {
-      drawVectorScene(W, H, t, inset);
-      return;
-    }
     c2.clearRect(0, 0, W, H);
     const lv = inset ? dLineVisible : mLineVisible, pv = inset ? dPointVisible : mPointVisible;
     const toScr = inset ? insProj : proj;
@@ -1878,48 +2075,6 @@ function initMap() {
         c2.save(); label(c2, short, x, y + dy, mState.sat); c2.restore();
       }
     });
-  }
-
-  function drawVectorScene(W, H, t, inset) {
-    const group = inset ? insVector : gVectorOverlay;
-    clearSvgGroup(group);
-    const lv = inset ? dLineVisible : mLineVisible;
-    const pv = inset ? dPointVisible : mPointVisible;
-    const toScr = inset ? insProj : proj;
-    PTMP_LINES.filter(lv).forEach(l => {
-      const pts = inset ? insLinePts(l) : linePts(l);
-      const points = pts.map(([x, y]) => `${x},${y}`).join(" ");
-      if (l.cat === "region") {
-        svgShape(group, "polyline", { points, fill: "none", stroke: "#FFFFFF", "stroke-width": 4.4, "stroke-linecap": "round", "stroke-linejoin": "round" });
-        svgShape(group, "polyline", { points, fill: "none", stroke: CAT_OF.region.color, "stroke-width": 2.4, "stroke-linecap": "round", "stroke-linejoin": "round" });
-      } else {
-        svgShape(group, "polyline", { points, fill: "none", stroke: CAT_OF.route.color, "stroke-width": 1.8, "stroke-dasharray": l.cat === "route" ? "7 5" : "none", "stroke-linecap": "round", "stroke-linejoin": "round", opacity: .8 });
-      }
-    });
-    PTMP_POINTS.filter(pv).forEach(p => {
-      const [x, y] = toScr(p.lon, p.lat);
-      if (x < -30 || x > W + 30 || y < -30 || y > H + 30) return;
-      const col = CAT_OF[p.cat].color;
-      svgShape(group, "circle", { cx: x, cy: y, r: 8, fill: col, opacity: .12 });
-      if (p.cat === "exchange") {
-        svgShape(group, "path", { d: `M${x} ${y - 6} L${x + 6} ${y} L${x} ${y + 6} L${x - 6} ${y} Z`, fill: col, stroke: "#FDFBF7", "stroke-width": 1.8 });
-      } else {
-        svgShape(group, "circle", { cx: x, cy: y, r: p.cat === "hub" ? 5 : 3.5, fill: col, stroke: "#FDFBF7", "stroke-width": p.cat === "hub" ? 1.8 : 1.4 });
-      }
-      const show = inset
-        ? (p.cat === "hub" || (mState.insX && insView.s > insFitS * 1.35) || (mState.sel && mState.sel.id === p.id) || (mState.hov && mState.hov.id === p.id))
-        : (mState.sel && mState.sel.id === p.id) || (mState.hov && mState.hov.id === p.id) || view.s > sFit * 4.5;
-      if (show) svgText(group, p.name.replace(/\s*\([^)]*\)/g, ""), x, y - 10, mState.sat ? "#FFFFFF" : "#1C1917");
-    });
-    if (!inset) {
-      muniLab.forEach(m => {
-        const x = (m.x - view.cx) * view.s + W / 2;
-        const y = (m.y - view.cy) * view.s + H / 2;
-        if (m.w * view.s >= 70 && m.h * view.s >= 30 && x >= 30 && x <= W - 30) {
-          svgText(group, m.n.toUpperCase(), x, y);
-        }
-      });
-    }
   }
 
   /* ---------- main-map interactions ---------- */
@@ -2078,40 +2233,11 @@ function initMap() {
   /* ---------- Dili inset ---------- */
   const insSvg = $("insSvg"), insCv = $("insCv"), insBody = $("insBody"), insCtx = insCv.getContext("2d");
   const insRoot = document.createElementNS(NS, "g"); insSvg.appendChild(insRoot);
-  const insVectorLand = document.createElementNS(NS, "g");
-  insVectorLand.setAttribute("pointer-events", "none");
-  insSvg.appendChild(insVectorLand);
-  const insVector = document.createElementNS(NS, "g");
-  insVector.setAttribute("pointer-events", "none");
-  insSvg.appendChild(insVector);
   const insView = { cx: 0, cy: 0, s: 1 };
   let insFitS = 1;
-  let insetLandBase = null;
-  function buildInsetLand() {
-    clearSvgGroup(insVectorLand);
-    insetLandBase = { cx: insView.cx, cy: insView.cy, s: insView.s };
-    const toBase = (lon, lat) => [
-      (MX(lon) - insetLandBase.cx) * insetLandBase.s + (insCv.clientWidth || 260) / 2,
-      (MY(lat) - insetLandBase.cy) * insetLandBase.s + (insCv.clientHeight || 150) / 2
-    ];
-    DILI_ADM2.forEach(f => svgShape(insVectorLand, "path", {
-      d: screenPathD(f, toBase), fill: "rgba(246,227,215,.65)", "fill-rule": "evenodd",
-      stroke: "#D6D3D1", "stroke-width": .7, "vector-effect": "non-scaling-stroke"
-    }));
-    applyInsetLandView();
-  }
-  function applyInsetLandView() {
-    if (!insetLandBase) return;
-    const W = insCv.clientWidth || 260, H = insCv.clientHeight || 150;
-    const ratio = insView.s / insetLandBase.s;
-    const tx = W / 2 * (1 - ratio) + (insetLandBase.cx - insView.cx) * insView.s;
-    const ty = H / 2 * (1 - ratio) + (insetLandBase.cy - insView.cy) * insView.s;
-    insVectorLand.setAttribute("transform", `translate(${tx.toFixed(2)},${ty.toFixed(2)}) scale(${ratio})`);
-  }
   function insApply() {
     const W = insCv.clientWidth || 260, H = insCv.clientHeight || 150;
     insRoot.setAttribute("transform", `translate(${(W / 2 - insView.cx * insView.s).toFixed(2)},${(H / 2 - insView.cy * insView.s).toFixed(2)}) scale(${insView.s})`);
-    applyInsetLandView();
   }
   function insFit() {
     const W = insCv.clientWidth || 260, H = insCv.clientHeight || 150;
@@ -2119,7 +2245,6 @@ function initMap() {
     insView.s = insFitS;
     insView.cx = MX((DILI_BBOX[0] + DILI_BBOX[1]) / 2); insView.cy = MY((DILI_BBOX[2] + DILI_BBOX[3]) / 2);
     insApply();
-    buildInsetLand();
   }
   const insClampS = s => Math.max(insFitS * 0.6, Math.min(s, 256 * Math.pow(2, 15)));
   const insProj = (lon, lat) => [(MX(lon) - insView.cx) * insView.s + (insCv.clientWidth || 260) / 2, (MY(lat) - insView.cy) * insView.s + (insCv.clientHeight || 150) / 2];
@@ -2242,11 +2367,10 @@ function initMap() {
       const w = host.clientWidth, h = host.clientHeight;
       c.width = Math.max(1, w * dpr); c.height = Math.max(1, h * dpr);
       c.style.width = w + "px"; c.style.height = h + "px";
-      const context = c.getContext("2d");
-      if (context) context.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
     });
     /* re-fit the country view only when the window itself changed size — inset expand/collapse must keep it */
-    if (wrap.clientWidth !== lastW || wrap.clientHeight !== lastH) { lastW = wrap.clientWidth; lastH = wrap.clientHeight; fitView(); buildVectorLand(); }
+    if (wrap.clientWidth !== lastW || wrap.clientHeight !== lastH) { lastW = wrap.clientWidth; lastH = wrap.clientHeight; fitView(); }
     applyView(); insFit(); mDraw(); insDraw();
   }
   function mDraw() { drawScene(ctx, wrap.clientWidth, wrap.clientHeight, tNow, false); }
