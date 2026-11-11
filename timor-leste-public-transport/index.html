@@ -409,10 +409,10 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
 <nav class="topbar" aria-label="Briefing dashboard">
   <div class="wrap">
     <span class="viewtabs" role="group" aria-label="Choose a view">
-      <button class="vtab" id="viewtab-brief" type="button" aria-pressed="false" aria-controls="view-brief">
+      <button class="vtab is-on" id="viewtab-brief" type="button" aria-pressed="true" aria-controls="view-brief">
         <b>The Brief</b>
       </button>
-      <button class="vtab is-on" id="viewtab-dive" type="button" aria-pressed="true" aria-controls="view-dive">
+      <button class="vtab" id="viewtab-dive" type="button" aria-pressed="false" aria-controls="view-dive">
         <b>Deep Dive</b>
       </button>
     </span>
@@ -516,7 +516,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
 @media print{.viewtabs{display:none!important}}
 </style>
 
-<section id="view-brief" aria-label="The Brief — one-page infographic" hidden>
+<section id="view-brief" aria-label="The Brief — one-page infographic">
   <div class="wrap">
     <h2 class="bf-title">The reform at a glance: from informal microlets to a scheduled, licensed network</h2>
     <p class="bf-dek">What US$35.14M buys across three phases, the 26-route network it restructures, the 15 moves that rebuild the sector, and the five decisions that unlock it. For the interactive boards, the counterparts matrix and the map, switch to <b>Deep Dive</b>.</p>
@@ -653,7 +653,7 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
   </div>
 </section>
 
-<div id="view-dive" aria-label="Deep Dive — full interactive dashboard">
+<div id="view-dive" aria-label="Deep Dive — full interactive dashboard" hidden>
 
 <!-- ================= MASTHEAD (lives inside #view-dive, opened at the end of part1b_brief_view.html) ================= -->
 <header class="masthead" id="top">
@@ -1080,12 +1080,12 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
 
 <script>
 /* ================= VIEW SWITCH · "The brief" <-> "Deep Dive" =================
-   Deep Dive is the default so every chart/map initializes exactly as before.
-   Switching back re-dispatches resize so ECharts/Leaflet re-fit. */
+   The Brief is the homepage; dashboard hashes retain their Deep Dive destination.
+   Switching views re-dispatches resize so charts/maps re-fit. */
 (function(){
   var TABS = { brief: document.getElementById("viewtab-brief"), dive: document.getElementById("viewtab-dive") };
   var VIEWS = { brief: document.getElementById("view-brief"), dive: document.getElementById("view-dive") };
-  var current = "dive";
+  var current = "brief";
   function apply(mode, fromHash){
     if (!VIEWS[mode] || !TABS[mode] || mode === current) return;
     current = mode;
@@ -1101,11 +1101,11 @@ footer p{font-size:.82rem;line-height:1.65;color:var(--muted);max-width:88ch}
   }
   TABS.brief.addEventListener("click", function(){ apply("brief"); });
   TABS.dive.addEventListener("click", function(){ apply("dive"); });
-  /* deep-link: let the Deep Dive finish initializing while visible, then switch */
-  if (/^#brief$/.test(location.hash)) setTimeout(function(){ apply("brief", true); }, 0);
+  /* Preserve shared links into the interactive dashboard. */
+  if (/^#(?:dive|sections|counterparts|map)$/.test(location.hash)) apply("dive", true);
   /* same-document hash navigation (back/forward, shared #brief/#dive links) */
   window.addEventListener("hashchange", function(){
-    var m = /^#brief$/.test(location.hash) ? "brief" : (/^#dive$/.test(location.hash) ? "dive" : null);
+    var m = /^#brief$/.test(location.hash) ? "brief" : (/^#(?:dive|sections|counterparts|map)$/.test(location.hash) ? "dive" : null);
     if (m) apply(m, true);
   });
   window.__viewTabs = { apply: apply, current: function(){ return current; } };
@@ -1633,6 +1633,10 @@ document.querySelectorAll('[role="tablist"] [role="tab"]').forEach(t => {
     else if (e.key === "End") n = ids[2];
     if (n) { e.preventDefault(); goTab(n, { focus: true }); }
   });
+});
+window.addEventListener("hashchange", () => {
+  const name = location.hash.slice(1);
+  if (name === "sections" || name === "counterparts" || name === "map") goTab(name, { noHash: true });
 });
 /* cross-pane navigation: open a board on the sections tab */
 function goBoard(secId, tab) {
